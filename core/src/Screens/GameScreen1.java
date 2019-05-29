@@ -19,7 +19,7 @@ import java.util.Random;
 import static Screens.MainMenu.MAX_AIRCRAFT_SPAWN_TIME;
 import static Screens.MainMenu.MIN_AIRCRAFT_SPAWN_TIME;
 
-public class GameScreen implements Screen {
+public class GameScreen1 implements Screen {
 
     private static final int SPEED = 600;
     public static final int TANK_WIDTH = 92;
@@ -52,7 +52,7 @@ public class GameScreen implements Screen {
     private ArrayList<Carrier> carriers;
     private float shootTimer;
 
-    public GameScreen(Main game){
+    public GameScreen1(Main game){
         this.game = game;
 
         random = new Random();
