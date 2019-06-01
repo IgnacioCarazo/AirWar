@@ -18,15 +18,19 @@ import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 public class GameScreen1 implements Screen {
-
+    // constants
     private static final int SPEED = 600;
-    public static final int TANK_WIDTH = 92;
+    private static final int TANK_WIDTH = 92;
     public static final int TANK_HEIGHT = 110;
-    public static final float SHOOT_WAIT_TIME = 0.3f;
-    public static final float LOW_DANGER_MAX_AIRCRAFT_SPAWN_TIME = 5f;
-    public static final float AIRCRAFT_SPAWN_TIME = 1f;
+    private static final float SHOOT_WAIT_TIME = 0.3f;
+    private static final float AIRCRAFT_SPAWN_TIME = 4f;
+    public static final int AIRPORTS = 3;
+    public static final int CARRIERS = 2;
 
+    //statics
+    public static int routeIdentifier;
 
+    // Textures in Screen
     private Texture cliff_top;
     private Texture cliff_bottom;
     private Texture cliff_right;
@@ -61,33 +65,27 @@ public class GameScreen1 implements Screen {
     private Texture grass12;
     private Texture largeMountain;
     private Texture smallMountain;
-
-
-
     private Texture carrier_vertical;
     private Texture carrier_horizontal;
-    private int x, y;
+
+    // tools
     private String direction;
     private ShapeRenderer shapeRender;
-
+    private int x, y;
     private float aircraftSpawnTimer;
-
-    private Random random;
-
-
+    private float shootTimer;
     private Main game;
 
+    // Entities
     private ArrayList<Bullet> bullets;
     private ArrayList<Explosion> explosions;
     private ArrayList<Aircraft> aircrafts;
     private ArrayList<Carrier> carriers;
     private ArrayList<Airport> airports;
     private ArrayList<Texture> grass_tiles;
-    private float shootTimer;
 
     public GameScreen1(Main game){
         this.game = game;
-        random = new Random();
         shootTimer = 0;
         aircrafts = new ArrayList<Aircraft>();
         explosions = new ArrayList<Explosion>();
@@ -97,6 +95,7 @@ public class GameScreen1 implements Screen {
         grass_tiles = new ArrayList<Texture>();
         airports = new ArrayList<Airport>();
         aircraftSpawnTimer = AIRCRAFT_SPAWN_TIME;
+        routeIdentifier = 0;
     }
 
     @Override
@@ -157,29 +156,10 @@ public class GameScreen1 implements Screen {
 
 
 
-    private void drawGrass(int xDraw,int yDraw, ArrayList<Texture> textures){
-        int cont = 0;
-        int row = xDraw;
-        int column = yDraw;
-        int index = 0;
-        for (int i = 0; i < 3; i++) {
-                while (cont != 3) {
-                    game.batch.draw(textures.get(index), row, column);
-                    cont++;
-                    row += 16;
-                    index++;
-                }
-                row = xDraw;
-                column += 16;
-                cont = 0;
-
-        }
-    }
 
 
-    private void assignRoutes(){
 
-    }
+
 
     @Override
     public void render(float delta) {
@@ -198,8 +178,8 @@ public class GameScreen1 implements Screen {
                 int xCarrier2 = 300 + (int) (Math.random() * ((400 - 300) + 1));
                 int yCarrier1 = 430 + (int) (Math.random() * ((630 - 430) + 1));
                 int yCarrier2 = 130 + (int) (Math.random() * ((630 - 130) + 1));
-                carriers.add(new Carrier(xCarrier1, yCarrier1, createRandomRoutes()));
-                carriers.add(new Carrier(xCarrier2, yCarrier2, createRandomRoutes()));
+                carriers.add(new Carrier(xCarrier1, yCarrier1,0));
+                carriers.add(new Carrier(xCarrier2, yCarrier2,1));
         }
 
         //Spawn Airports
@@ -211,9 +191,19 @@ public class GameScreen1 implements Screen {
             int xAirport3 = 220 + (int) (Math.random() * ((800 - 220) + 1));
             int yAirport3 = 700 + (int) (Math.random() * ((800 - 700) + 1));
 
-            airports.add(new Airport(xAirport1, yAirport1));
-            airports.add(new Airport(xAirport2, yAirport2));
-            airports.add(new Airport(xAirport3,yAirport3));
+            airports.add(new Airport(xAirport1, yAirport1, 0));
+            airports.add(new Airport(xAirport2, yAirport2, 1));
+            airports.add(new Airport(xAirport3,yAirport3, 2));
+        }
+
+        //Asignacion de rutas
+        if (!Airport.flag){
+            for (Carrier carrier: carriers){
+                carrier.setRoutes(Methods.assignCarrierRoutes(carriers,airports,carrier));
+            }
+            for (Airport airport: airports){
+                System.out.println(1);
+            }
         }
 
         //Codigo de spawn de aviones (TEMPORAL)

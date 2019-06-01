@@ -202,6 +202,44 @@ public class Aircraft {
         rect.move(x,y);
     }
 
+    public void update(float deltaTime, Route route){
+        if (x < route.xEnd && y > route.yEnd){
+            texture = aircraft9down;
+            x += SPEED * deltaTime;
+            y -= SPEED * deltaTime;
+        } else if (x > route.xEnd && y > route.yEnd){
+            texture = aircraft9down;
+            x -= SPEED * deltaTime;
+            y -= SPEED * deltaTime;
+        } else if (x < route.xEnd && y < route.yEnd){
+            texture = aircraft9up;
+            x += SPEED * deltaTime;
+            y += SPEED * deltaTime;
+        } else if (x > route.xEnd && y < route.yEnd){
+            texture = aircraft9up;
+            x -= SPEED * deltaTime;
+            y += SPEED * deltaTime;
+        } else if (y > route.yEnd){
+            texture = aircraft9down;
+            y-=SPEED *deltaTime;
+        }  else if (y < route.yEnd){
+            texture = aircraft9up;
+            y+=SPEED *deltaTime;
+        } else if (x > route.xEnd){
+            texture = aircraft9left;
+            x-=SPEED *deltaTime;
+        }  else if (x < route.xEnd) {
+            texture = aircraft9right;
+            x += SPEED * deltaTime;
+        }
+        if (x == route.xEnd && y == route.yEnd){
+            destination = true;
+        }
+
+        rect.move(x,y);
+    }
+
+
     public void render(SpriteBatch batch) {
         batch.draw(texture, x, y);
     }

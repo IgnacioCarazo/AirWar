@@ -19,18 +19,32 @@ public class Carrier {
     }
 
     public static boolean flag;
+
+    public void setRoutes(ArrayList<Route> routes) {
+        this.routes = routes;
+    }
+
+    public ArrayList<Route> getRoutes() {
+        return routes;
+    }
+
     private CollisionRect rect;
 
     private int x, y;
+    private int index;
 
+    public int getIndex() {
+        return index;
+    }
 
+    public void setIndex(int index) {
+        this.index = index;
+    }
 
-
-    public Carrier(int x, int y, ArrayList<Route> routes){
+    public Carrier(int x, int y, int index){
         this.x = x;
         this.y = y;
-        this.routes = routes;
-
+        this.index = index;
         if (texture == null){
             texture = new Texture("carrier_horizontal.png");
         }

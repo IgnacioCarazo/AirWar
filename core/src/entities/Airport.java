@@ -3,6 +3,9 @@ package entities;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import tools.CollisionRect;
+import tools.Route;
+
+import java.util.ArrayList;
 
 public class Airport {
     private static Texture texture;
@@ -18,15 +21,30 @@ public class Airport {
     public static boolean flag;
     private CollisionRect rect;
 
-    private int x, y;
+    private int x, y, index;
+    private ArrayList<Route> routes;
 
 
+    public int getIndex() {
+        return index;
+    }
 
+    public void setIndex(int index) {
+        this.index = index;
+    }
 
-    public Airport(int x, int y){
+    public ArrayList<Route> getRoutes() {
+        return routes;
+    }
+
+    public void setRoutes(ArrayList<Route> routes) {
+        this.routes = routes;
+    }
+
+    public Airport(int x, int y, int index){
         this.x = x;
         this.y = y;
-
+        this.index = index;
 
         if (texture == null){
             texture = new Texture("airport.png");

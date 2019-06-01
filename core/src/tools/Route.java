@@ -1,13 +1,13 @@
 package tools;
 
 public class Route {
-    private int indexAirport;
-    private int indexCarrier;
-    private int xStart;
-    private int yStart;
-    private int xEnd;
-    private int yEnd;
-    private int dangerLVL;
+    public int indexAirport;
+    public int indexCarrier;
+    public int xStart;
+    public int yStart;
+    public int xEnd;
+    public int yEnd;
+    public int dangerLVL;
 
 
     public Route(int indexAirport, int indexCarrier, int xStart, int yStart, int xEnd, int yEnd, int dangerLVL) {

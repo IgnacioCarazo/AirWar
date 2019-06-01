@@ -4,6 +4,11 @@ import com.airwar.Main;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import entities.Airport;
+import entities.Carrier;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Methods {
 
@@ -43,4 +48,31 @@ public class Methods {
         }
     }
 
+    public static Route chooseRandomRoute(ArrayList<Route> routes){
+        Random random = new Random();
+        return routes.get(random.nextInt(routes.size()));
+    }
+
+    public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier){
+        int unavailable = carrier.getIndex();
+        int routesToAssign = randomCarrierIndex();
+
+        ArrayList<Route> routes = new ArrayList<Route>();
+        ArrayList<String> ports = new ArrayList<String>();
+
+        ports.add("carriers");
+        ports.add("airports");
+        for (int i = 0; i < routesToAssign; i++) {
+            int randomAirportIndex = randomAirportIndex();
+            int randomCarrierIndex = randomCarrierIndex();
+
+        }
+        return routes;
+    }
+
+    public static char assignRouteIdentifier(int index)
+    {
+        String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return AlphaNumericString.charAt(index);
+    }
 }
