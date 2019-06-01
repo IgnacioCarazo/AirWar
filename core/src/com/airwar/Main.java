@@ -1,5 +1,5 @@
 package com.airwar;
-import Screens.MainMenu;
+import screens.MainMenu;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
