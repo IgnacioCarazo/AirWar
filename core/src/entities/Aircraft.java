@@ -15,23 +15,18 @@ public class Aircraft {
     private CollisionRect rect;
     public boolean invincible;
     public boolean destination;
-    public int indexDestinationCarrier;
-    public int indexDestinationAirport;
     public Route route;
 
-    private int x, y, xBase, yBase;
+    private int x, y;
 
-    public int getxBase() {
-        return xBase;
-    }
-
-    public int getyBase() {
-        return yBase;
-    }
 
     public int getX() {
         return x;
     }
+    public int getY() {
+        return y;
+    }
+
 
     public int airportAssigned, carrierAssigned;
 
@@ -39,17 +34,8 @@ public class Aircraft {
         Aircraft.texture = texture;
     }
 
-    public void setxBase(int xBase) {
-        this.xBase = xBase;
-    }
 
-    public void setyBase(int yBase) {
-        this.yBase = yBase;
-    }
 
-    public int getY() {
-        return y;
-    }
 
     // up sprites
     public static Texture aircraft1up = new Texture("aircraft_01_up.png");
@@ -157,6 +143,37 @@ public class Aircraft {
         this.destination = false;
 
     }
+
+    public Aircraft(Route route) {
+        this.x = route.xStart;
+        this.y = route.yStart;
+        this.route = route;
+        downSprites = new ArrayList<Texture>();
+        downSprites.add(aircraft1down);
+        downSprites.add(aircraft2down);
+        downSprites.add(aircraft3down);
+        downSprites.add(aircraft4down);
+        downSprites.add(aircraft5down);
+        downSprites.add(aircraft6down);
+        downSprites.add(aircraft7down);
+        downSprites.add(aircraft8down);
+        downSprites.add(aircraft9down);
+        downSprites.add(aircraft10down);
+
+        if (route.entity.equals("carrier")){
+            this.carrierAssigned = route.index;
+        } else {
+            this.airportAssigned = route.index;
+        }
+        if (texture == null) {
+            texture = aircraft9down;
+        }
+
+        this.rect = new CollisionRect(x, y, texture.getWidth(), texture.getHeight());
+        this.invincible = false;
+        this.destination = false;
+
+    }
     public void update(float deltaTime){
         y -= SPEED * deltaTime;
         if (y < -texture.getHeight()){
@@ -164,43 +181,43 @@ public class Aircraft {
         }
         rect.move(x,y);
     }
-    public void update(float deltaTime, String dif){
-
-        if (x < xBase && y > yBase){
-            texture = aircraft9down;
-            x += SPEED * deltaTime;
-            y -= SPEED * deltaTime;
-        } else if (x > xBase && y > yBase){
-            texture = aircraft9down;
-            x -= SPEED * deltaTime;
-            y -= SPEED * deltaTime;
-        } else if (x < xBase && y < yBase){
-            texture = aircraft9up;
-            x += SPEED * deltaTime;
-            y += SPEED * deltaTime;
-        } else if (x > xBase && y < yBase){
-            texture = aircraft9up;
-            x -= SPEED * deltaTime;
-            y += SPEED * deltaTime;
-        } else if (y > yBase){
-            texture = aircraft9down;
-            y-=SPEED *deltaTime;
-        }  else if (y < yBase){
-            texture = aircraft9up;
-            y+=SPEED *deltaTime;
-        } else if (x > xBase){
-            texture = aircraft9left;
-            x-=SPEED *deltaTime;
-        }  else if (x < xBase) {
-            texture = aircraft9right;
-            x += SPEED * deltaTime;
-        }
-        if (x == xBase && y == yBase){
-            destination = true;
-        }
-
-        rect.move(x,y);
-    }
+//    public void update(float deltaTime, String dif){
+//
+//        if (x < xBase && y > yBase){
+//            texture = aircraft9down;
+//            x += SPEED * deltaTime;
+//            y -= SPEED * deltaTime;
+//        } else if (x > xBase && y > yBase){
+//            texture = aircraft9down;
+//            x -= SPEED * deltaTime;
+//            y -= SPEED * deltaTime;
+//        } else if (x < xBase && y < yBase){
+//            texture = aircraft9up;
+//            x += SPEED * deltaTime;
+//            y += SPEED * deltaTime;
+//        } else if (x > xBase && y < yBase){
+//            texture = aircraft9up;
+//            x -= SPEED * deltaTime;
+//            y += SPEED * deltaTime;
+//        } else if (y > yBase){
+//            texture = aircraft9down;
+//            y-=SPEED *deltaTime;
+//        }  else if (y < yBase){
+//            texture = aircraft9up;
+//            y+=SPEED *deltaTime;
+//        } else if (x > xBase){
+//            texture = aircraft9left;
+//            x-=SPEED *deltaTime;
+//        }  else if (x < xBase) {
+//            texture = aircraft9right;
+//            x += SPEED * deltaTime;
+//        }
+//        if (x == xBase && y == yBase){
+//            destination = true;
+//        }
+//
+//        rect.move(x,y);
+//    }
 
     public void update(float deltaTime, Route route){
         if (x < route.xEnd && y > route.yEnd){

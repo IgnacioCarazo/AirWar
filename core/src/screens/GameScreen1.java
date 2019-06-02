@@ -23,12 +23,13 @@ public class GameScreen1 implements Screen {
     private static final int TANK_WIDTH = 92;
     public static final int TANK_HEIGHT = 110;
     private static final float SHOOT_WAIT_TIME = 0.3f;
-    private static final float AIRCRAFT_SPAWN_TIME = 4f;
+    private static final float AIRCRAFT_SPAWN_TIME = 6f;
     public static final int AIRPORTS = 3;
     public static final int CARRIERS = 2;
 
     //statics
     public static int routeIdentifier;
+    public static ArrayList<Route> existingRoutes;
 
     // Textures in Screen
     private Texture cliff_top;
@@ -84,6 +85,7 @@ public class GameScreen1 implements Screen {
     private ArrayList<Airport> airports;
     private ArrayList<Texture> grass_tiles;
 
+
     public GameScreen1(Main game){
         this.game = game;
         shootTimer = 0;
@@ -94,6 +96,7 @@ public class GameScreen1 implements Screen {
         shapeRender = new ShapeRenderer();
         grass_tiles = new ArrayList<Texture>();
         airports = new ArrayList<Airport>();
+        existingRoutes = new ArrayList<Route>();
         aircraftSpawnTimer = AIRCRAFT_SPAWN_TIME;
         routeIdentifier = 0;
     }
@@ -202,8 +205,8 @@ public class GameScreen1 implements Screen {
                 carrier.setRoutes(Methods.assignCarrierRoutes(carriers,airports,carrier));
             }
             for (Airport airport: airports){
-                System.out.println(1);
             }
+            System.out.println("Total routes: " +  existingRoutes.size());
         }
 
         //Codigo de spawn de aviones (TEMPORAL)
@@ -213,26 +216,31 @@ public class GameScreen1 implements Screen {
 
                 int randomAirportIndex = Methods.randomAirportIndex();
                 int randomCarrierIndex = Methods.randomCarrierIndex();
-                System.out.println("From Carrier " + randomCarrierIndex);
                 ArrayList<String> ports = new ArrayList<String>();
                 ports.add("carriers");
                 ports.add("airports");
-                aircrafts.add(new Aircraft(carriers.get(randomCarrierIndex).getX(),carriers.get(randomCarrierIndex).getY(),randomAirportIndex,ports.get(randomCarrierIndex)));
+                if (carriers.get(randomCarrierIndex).getRoutes().size() != 0){
+                    Route randomRoute = Methods.chooseRandomRoute(carriers.get(randomCarrierIndex).getRoutes());
+                    System.out.println("Carrier " + randomCarrierIndex);
+
+                    System.out.println("Has " + carriers.get(randomCarrierIndex).getRoutes().size() + " routes");
+                    aircrafts.add(new Aircraft(randomRoute));
+                    System.out.println();
+                    System.out.println("Atributos de la ruta:");
+                    System.out.println("Ruta " + randomRoute.identifier);
+                    System.out.println("From " + randomRoute.entity + " "+ randomRoute.index + " to " + randomRoute.entityAssigned + " " + randomRoute.indexAssigned);
+
+                    System.out.println();
+                } else {
+                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).getIndex() + " No tiene rutas asignadas");
+                }
             }
         }
 
         //Update de aviones (TEMPORAL)
         ArrayList<Aircraft> aircraftsToRemove = new ArrayList<Aircraft>();
         for (Aircraft aircraft: aircrafts) {
-            if (aircraft.getX() == carriers.get(0).getX() && aircraft.getY() == carriers.get(0).getY()){
-                aircraft.setxBase(airports.get(aircraft.carrierAssigned).getX());
-                aircraft.setyBase(airports.get(aircraft.carrierAssigned).getY());
-
-            } else if (aircraft.getX() == carriers.get(1).getX() && aircraft.getY() == carriers.get(1).getY()){
-                aircraft.setxBase(airports.get(aircraft.airportAssigned).getX());
-                aircraft.setyBase(airports.get(aircraft.airportAssigned).getY());
-            }
-            aircraft.update(delta,"");
+            aircraft.update(delta, aircraft.route);
             if (aircraft.remove){
                 aircraftsToRemove.add(aircraft);
             }
@@ -302,36 +310,13 @@ public class GameScreen1 implements Screen {
 
         //Check collisions aircraft/carrier
         for (Aircraft aircraft: aircrafts){
-            if (aircraft.carrierAssigned == 0){
-                if (aircraft.getCollisionRect().collideWith(carriers.get(aircraft.carrierAssigned).getCollisionRect())){
+            if (aircraft.destination){
                 aircraftsToRemove.add(aircraft);
             }
-        }
-            if (aircraft.carrierAssigned == 1){
-                if (aircraft.getCollisionRect().collideWith(carriers.get(aircraft.carrierAssigned).getCollisionRect())){
-                aircraftsToRemove.add(aircraft);
-                }
-            }
-
         }
 
         //Check collisiions aircraft/airport
         for (Aircraft aircraft: aircrafts){
-//            if (aircraft.airportAssigned == 0){
-//                if (aircraft.getCollisionRect().collideWith(airports.get(0).getCollisionRect())){
-//                    aircraftsToRemove.add(aircraft);
-//                }
-//            }
-//            if (aircraft.airportAssigned == 1){
-//                if (aircraft.getCollisionRect().collideWith(airports.get(1).getCollisionRect())){
-//                    aircraftsToRemove.add(aircraft);
-//                }
-//            }
-//            if (aircraft.airportAssigned == 2){
-//                if (aircraft.getCollisionRect().collideWith(airports.get(2).getCollisionRect())){
-//                    aircraftsToRemove.add(aircraft);
-//                }
-//            }
             if (aircraft.destination){
                 aircraftsToRemove.add(aircraft);
             }

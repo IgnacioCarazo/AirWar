@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import entities.Airport;
 import entities.Carrier;
+import screens.GameScreen1;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -28,8 +29,10 @@ public class Methods {
 
     public static int randomAirportIndex() {
         int number = (int) (Math.random() * (3));
-        System.out.println("To airport " + number);
-        return number;
+        return (int) (Math.random() * (3));
+    }
+    public static int randomRoute() {
+        return (int) (Math.random() * (4));
     }
 
     public static int randomCarrierIndex() {
@@ -54,23 +57,57 @@ public class Methods {
     }
 
     public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier){
+
         int unavailable = carrier.getIndex();
-        int routesToAssign = randomCarrierIndex();
+        int routesToAssign = 2 + (int) (Math.random() * ((4 - 2) + 1));
 
         ArrayList<Route> routes = new ArrayList<Route>();
         ArrayList<String> ports = new ArrayList<String>();
 
+
         ports.add("carriers");
         ports.add("airports");
+
         for (int i = 0; i < routesToAssign; i++) {
+            // Lists of airports/carriers occupied so there cannot be 2 routes exactly the same
+            ArrayList<Integer> airportsOccupied = new ArrayList<Integer>();
+            ArrayList<Integer> carriersOccupied = new ArrayList<Integer>();
+
             int randomAirportIndex = randomAirportIndex();
             int randomCarrierIndex = randomCarrierIndex();
 
+            String port = ports.get(randomCarrierIndex);
+
+            if (port.equals("carriers")){
+                Carrier carrierAssigned = carriers.get(randomCarrierIndex);
+                if (randomCarrierIndex != unavailable){
+                    if (!carriersOccupied.contains(carrierAssigned.getIndex())){
+                        Route route = new Route("carrier","carrier",carrier.getIndex(),carrierAssigned.getIndex(),carrier.getX(),carrier.getY(),carrierAssigned.getX(),carrierAssigned.getY(),0);
+                        route.identifier = assignRouteIdentifier(GameScreen1.routeIdentifier);
+                        routes.add(route);
+                        GameScreen1.existingRoutes.add(route);
+                        GameScreen1.routeIdentifier += 1;
+                        carriersOccupied.add(carrierAssigned.getIndex());
+                    }
+                }
+            } else {
+                Airport airportAssigned = airports.get(randomAirportIndex);
+                if (!airportsOccupied.contains(airportAssigned.getIndex())){
+                    Route route = new Route("carrier","airport",carrier.getIndex(),airportAssigned.getIndex(), carrier.getX(),carrier.getY(),airportAssigned.getX(),airportAssigned.getY(),0);
+                    route.identifier = assignRouteIdentifier(GameScreen1.routeIdentifier);
+                    routes.add(route);
+                    GameScreen1.existingRoutes.add(route);
+                    GameScreen1.routeIdentifier += 1;
+                    airportsOccupied.add(airportAssigned.getIndex());
+                }
+
+
+            }
         }
         return routes;
     }
 
-    public static char assignRouteIdentifier(int index)
+    private static char assignRouteIdentifier(int index)
     {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         return AlphaNumericString.charAt(index);
