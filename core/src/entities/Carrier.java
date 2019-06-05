@@ -2,7 +2,9 @@ package entities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import screens.GameScreen1;
 import tools.CollisionRect;
+import tools.Methods;
 import tools.Route;
 
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ public class Carrier {
     public int getY() {
         return y;
     }
-
+    public char identifier;
     public static boolean flag;
 
     public void setRoutes(ArrayList<Route> routes) {
@@ -48,8 +50,9 @@ public class Carrier {
         if (texture == null){
             texture = new Texture("carrier_horizontal.png");
         }
-
+        this.identifier = Methods.assignRouteIdentifier(GameScreen1.routeIdentifier);
         this.rect = new CollisionRect(x,y,texture.getWidth()/2,texture.getHeight()/2);
+        GameScreen1.routeIdentifier += 1;
 
     }
     public void update(float deltaTime){

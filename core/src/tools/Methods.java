@@ -83,7 +83,8 @@ public class Methods {
                 if (randomCarrierIndex != unavailable){
                     if (!carriersOccupied.contains(carrierAssigned.getIndex())){
                         Route route = new Route("carrier","carrier",carrier.getIndex(),carrierAssigned.getIndex(),carrier.getX(),carrier.getY(),carrierAssigned.getX(),carrierAssigned.getY(),0);
-                        route.identifier = assignRouteIdentifier(GameScreen1.routeIdentifier);
+                        StringBuilder ID = new StringBuilder().append(carrier.identifier).append(carrierAssigned.identifier);
+                        route.identifier = String.valueOf(ID);
                         routes.add(route);
                         GameScreen1.existingRoutes.add(route);
                         GameScreen1.routeIdentifier += 1;
@@ -94,7 +95,8 @@ public class Methods {
                 Airport airportAssigned = airports.get(randomAirportIndex);
                 if (!airportsOccupied.contains(airportAssigned.getIndex())){
                     Route route = new Route("carrier","airport",carrier.getIndex(),airportAssigned.getIndex(), carrier.getX(),carrier.getY(),airportAssigned.getX(),airportAssigned.getY(),0);
-                    route.identifier = assignRouteIdentifier(GameScreen1.routeIdentifier);
+                    StringBuilder ID = new StringBuilder().append(carrier.identifier).append(airportAssigned.identifier);
+                    route.identifier = String.valueOf(ID);
                     routes.add(route);
                     GameScreen1.existingRoutes.add(route);
                     GameScreen1.routeIdentifier += 1;
@@ -107,7 +109,7 @@ public class Methods {
         return routes;
     }
 
-    private static char assignRouteIdentifier(int index)
+    public static char assignRouteIdentifier(int index)
     {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         return AlphaNumericString.charAt(index);

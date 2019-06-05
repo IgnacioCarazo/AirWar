@@ -10,7 +10,7 @@ public class Route {
     public int dangerLVL;
     public String entity;
     public String entityAssigned;
-    public char identifier;
+    public String identifier;
 
 
     public Route(String entity, String entityAssigned, int index, int indexAssigned, int xStart, int yStart, int xEnd, int yEnd, int dangerLVL) {

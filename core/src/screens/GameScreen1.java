@@ -221,14 +221,14 @@ public class GameScreen1 implements Screen {
                 ports.add("airports");
                 if (carriers.get(randomCarrierIndex).getRoutes().size() != 0){
                     Route randomRoute = Methods.chooseRandomRoute(carriers.get(randomCarrierIndex).getRoutes());
-                    System.out.println("Carrier " + randomCarrierIndex);
+                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).identifier);
 
                     System.out.println("Has " + carriers.get(randomCarrierIndex).getRoutes().size() + " routes");
                     aircrafts.add(new Aircraft(randomRoute));
                     System.out.println();
                     System.out.println("Atributos de la ruta:");
                     System.out.println("Ruta " + randomRoute.identifier);
-                    System.out.println("From " + randomRoute.entity + " "+ randomRoute.index + " to " + randomRoute.entityAssigned + " " + randomRoute.indexAssigned);
+                    System.out.println("From " + randomRoute.entity + " "+ randomRoute.identifier.charAt(0) + " to " + randomRoute.entityAssigned + " " + randomRoute.identifier.charAt(1));
 
                     System.out.println();
                 } else {
@@ -315,12 +315,7 @@ public class GameScreen1 implements Screen {
             }
         }
 
-        //Check collisiions aircraft/airport
-        for (Aircraft aircraft: aircrafts){
-            if (aircraft.destination){
-                aircraftsToRemove.add(aircraft);
-            }
-        }
+
         bullets.removeAll(bulletsToRemove);
         aircrafts.removeAll(aircraftsToRemove);
 
@@ -346,23 +341,20 @@ public class GameScreen1 implements Screen {
         game.batch.draw(top_left_sea,600,430);
         game.batch.draw(bottom_left,300,130);
         game.batch.draw(bottom_right,600,130);
-
-
-
-
-
         game.batch.draw(sky,900,0);
         game.batch.draw(tank, x, y);
         game.batch.draw(smallMountain, 120,400);
+
         Methods.drawTerrain(120,120 + smallMountain.getWidth(),400,415,forest1, game);
         Methods.drawTerrain(0,890,90,95,forest4,game);
+
         int towny = 130;
         int townx = 670;
         for (int i = 0; i < 9; i++) {
             game.batch.draw(town1,townx,towny);
             towny += 30;
-
         }
+
         Methods.drawTerrain(600,700, 700, 740,town2, game);
 
         // Render bullets
@@ -388,15 +380,18 @@ public class GameScreen1 implements Screen {
         for (Explosion explosion : explosions) {
             explosion.render(game.batch);
         }
-        Carrier.flag = true;
-        Airport.flag = true;
+
 
 
 
 
         game.batch.end();// le dice al compilador que ya no va a dibujar mas imagenes
-        Methods.drawDottedLine(shapeRender,10,carriers.get(0).getX() + carrier_horizontal.getWidth()/2, carriers.get(0).getY(),carriers.get(1).getX()+carrier_horizontal.getWidth()/2, carriers.get(1).getY());
+            for (Route route: existingRoutes){
+                Methods.drawDottedLine(shapeRender,5,route.xStart + 40, route.yStart,route.xEnd + 50, route.yEnd);
+            }
 
+        Carrier.flag = true;
+        Airport.flag = true;
     }
 
 

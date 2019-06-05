@@ -2,7 +2,9 @@ package entities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import screens.GameScreen1;
 import tools.CollisionRect;
+import tools.Methods;
 import tools.Route;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ public class Airport {
     public int getY() {
         return y;
     }
+    public char identifier;
 
     public static boolean flag;
     private CollisionRect rect;
@@ -49,7 +52,9 @@ public class Airport {
         if (texture == null){
             texture = new Texture("airport.png");
         }
+        this.identifier = Methods.assignRouteIdentifier(GameScreen1.routeIdentifier);
         this.rect = new CollisionRect(x,y,texture.getWidth()/3,texture.getHeight()/3);
+        GameScreen1.routeIdentifier += 1;
 
     }
     public void update(float deltaTime){
