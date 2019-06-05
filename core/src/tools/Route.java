@@ -1,6 +1,7 @@
 package tools;
 
 public class Route {
+    public int weight;
     public int index;
     public int indexAssigned;
     public int xStart;

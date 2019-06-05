@@ -56,6 +56,30 @@ public class Methods {
         return routes.get(random.nextInt(routes.size()));
     }
 
+    public static void changeRouteDanger(ArrayList<Route> routes, ArrayList<Carrier> carriers, ArrayList<Airport> airports, String identifier){
+        for (Route route : routes){
+            if (route.identifier.equals(identifier)) {
+                route.dangerLVL += 1;
+            }
+        }
+//        for (Carrier carrier: carriers){
+//            for (Route route : carrier.getRoutes()){
+//                if (route.identifier.equals(identifier)) {
+//                    route.dangerLVL += 1;
+//                }
+//            }
+//        }
+//        for (Airport airport: airports) {
+//            if (airport.getRoutes().size() != 0) {
+//                for (Route route : airport.getRoutes()) {
+//                    if (route.identifier.equals(identifier)) {
+//                        route.dangerLVL += 1;
+//                    }
+//                }
+//            }
+//        }
+    }
+
     public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier){
 
         int unavailable = carrier.getIndex();

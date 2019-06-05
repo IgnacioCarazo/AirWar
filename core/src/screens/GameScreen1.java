@@ -23,7 +23,11 @@ public class GameScreen1 implements Screen {
     private static final int TANK_WIDTH = 92;
     public static final int TANK_HEIGHT = 110;
     private static final float SHOOT_WAIT_TIME = 0.3f;
-    private static final float AIRCRAFT_SPAWN_TIME = 6f;
+    private static final float AIRCRAFT_NO_DANGER_SPAWN_TIME = 5f;
+    private static final float AIRCRAFT_LOW_DANGER_SPAWN_TIME = 10f;
+    private static final float AIRCRAFT_MEDIUM_DANGER_SPAWN_TIME = 14f;
+    private static final float AIRCRAFT_HIGH_DANGER_SPAWN_TIME = 20f;
+
     public static final int AIRPORTS = 3;
     public static final int CARRIERS = 2;
 
@@ -97,7 +101,7 @@ public class GameScreen1 implements Screen {
         grass_tiles = new ArrayList<Texture>();
         airports = new ArrayList<Airport>();
         existingRoutes = new ArrayList<Route>();
-        aircraftSpawnTimer = AIRCRAFT_SPAWN_TIME;
+        aircraftSpawnTimer = AIRCRAFT_NO_DANGER_SPAWN_TIME;
         routeIdentifier = 0;
     }
 
@@ -211,30 +215,49 @@ public class GameScreen1 implements Screen {
 
         //Codigo de spawn de aviones (TEMPORAL)
         if (aircraftSpawnTimer <= 0) {
-            if (carriers.size() <= 2) {
-                aircraftSpawnTimer = AIRCRAFT_SPAWN_TIME;
-
                 int randomAirportIndex = Methods.randomAirportIndex();
                 int randomCarrierIndex = Methods.randomCarrierIndex();
+
                 ArrayList<String> ports = new ArrayList<String>();
                 ports.add("carriers");
                 ports.add("airports");
+
                 if (carriers.get(randomCarrierIndex).getRoutes().size() != 0){
                     Route randomRoute = Methods.chooseRandomRoute(carriers.get(randomCarrierIndex).getRoutes());
-                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).identifier);
 
+                    if (randomRoute.dangerLVL >= 0 && randomRoute.dangerLVL < 2){
+                        aircraftSpawnTimer = AIRCRAFT_NO_DANGER_SPAWN_TIME;
+                        aircrafts.add(new Aircraft(randomRoute));
+
+                    } else if (randomRoute.dangerLVL >= 2 && randomRoute.dangerLVL < 4){
+                        aircraftSpawnTimer = AIRCRAFT_LOW_DANGER_SPAWN_TIME;
+                        aircrafts.add(new Aircraft(randomRoute));
+
+                    } else if (randomRoute.dangerLVL >= 4 && randomRoute.dangerLVL < 8){
+                        aircraftSpawnTimer = AIRCRAFT_MEDIUM_DANGER_SPAWN_TIME;
+                        aircrafts.add(new Aircraft(randomRoute));
+
+                    } else if (randomRoute.dangerLVL >= 8){
+                        aircraftSpawnTimer = AIRCRAFT_HIGH_DANGER_SPAWN_TIME;
+                        aircrafts.add(new Aircraft(randomRoute));
+
+                    }
+
+
+                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).identifier);
                     System.out.println("Has " + carriers.get(randomCarrierIndex).getRoutes().size() + " routes");
-                    aircrafts.add(new Aircraft(randomRoute));
                     System.out.println();
                     System.out.println("Atributos de la ruta:");
                     System.out.println("Ruta " + randomRoute.identifier);
                     System.out.println("From " + randomRoute.entity + " "+ randomRoute.identifier.charAt(0) + " to " + randomRoute.entityAssigned + " " + randomRoute.identifier.charAt(1));
-
+                    System.out.println("Danger LVL: " + randomRoute.dangerLVL);
+                    System.out.println("Wait time: " + aircraftSpawnTimer);
                     System.out.println();
+
                 } else {
-                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).getIndex() + " No tiene rutas asignadas");
+
+                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).getIndex() + " has 0 routes assigned");
                 }
-            }
         }
 
         //Update de aviones (TEMPORAL)
@@ -301,6 +324,7 @@ public class GameScreen1 implements Screen {
                         bulletsToRemove.add(bullet);
                         aircraftsToRemove.add(aircraft);
                         explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
+                        Methods.changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
                     }
                 }
             }

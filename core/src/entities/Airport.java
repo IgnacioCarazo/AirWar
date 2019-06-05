@@ -49,6 +49,7 @@ public class Airport {
         this.y = y;
         this.index = index;
 
+
         if (texture == null){
             texture = new Texture("airport.png");
         }
