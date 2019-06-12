@@ -1,6 +1,9 @@
 package screens;
 
 
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import entities.*;
 import com.airwar.Main;
 import com.badlogic.gdx.Gdx;
@@ -18,15 +21,23 @@ import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
 public class GameScreen1 implements Screen {
+
     // constants
-    private static final int SPEED = 600;
+    private static final int SPEED = 300;
+    private static final float MOVE_WAIT_TIME = 0.02f;
     private static final int TANK_WIDTH = 92;
     public static final int TANK_HEIGHT = 110;
-    private static final float SHOOT_WAIT_TIME = 0.3f;
-    private static final float AIRCRAFT_NO_DANGER_SPAWN_TIME = 5f;
-    private static final float AIRCRAFT_LOW_DANGER_SPAWN_TIME = 10f;
-    private static final float AIRCRAFT_MEDIUM_DANGER_SPAWN_TIME = 14f;
-    private static final float AIRCRAFT_HIGH_DANGER_SPAWN_TIME = 20f;
+    private static float SHOOT_WAIT_TIME_A = 0.8f;
+    private static final float SHOOT_WAIT_TIME_B = 0.7f;
+    private static final float SHOOT_WAIT_TIME_C = 0.6f;
+    private static final float SHOOT_WAIT_TIME_D = 0.5f;
+    private static final float SHOOT_WAIT_TIME_E = 0.4f;
+    private static final float SHOOT_WAIT_TIME_F = 0.3f;
+    private static final float SHOOT_WAIT_TIME_G = 0.2f;
+    private static final float SHOOT_WAIT_TIME_H = 0.1f;
+    private static final float AIRCRAFT_SPAWN_TIME = 2f;
+    private static final float ROUTE_DANGER_TIMER = 10f;
+
 
     public static final int AIRPORTS = 3;
     public static final int CARRIERS = 2;
@@ -34,6 +45,7 @@ public class GameScreen1 implements Screen {
     //statics
     public static int routeIdentifier;
     public static ArrayList<Route> existingRoutes;
+    public static int score;
 
     // Textures in Screen
     private Texture cliff_top;
@@ -79,6 +91,11 @@ public class GameScreen1 implements Screen {
     private int x, y;
     private float aircraftSpawnTimer;
     private float shootTimer;
+    private float moveTimer;
+    private float dangerTimer;
+    private boolean left;
+    private boolean right;
+    private BitmapFont font;
     private Main game;
 
     // Entities
@@ -92,7 +109,11 @@ public class GameScreen1 implements Screen {
 
     public GameScreen1(Main game){
         this.game = game;
+        font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
+        score = 0;
         shootTimer = 0;
+        moveTimer = 0;
+        dangerTimer = 0;
         aircrafts = new ArrayList<Aircraft>();
         explosions = new ArrayList<Explosion>();
         bullets = new ArrayList<Bullet>();
@@ -101,8 +122,10 @@ public class GameScreen1 implements Screen {
         grass_tiles = new ArrayList<Texture>();
         airports = new ArrayList<Airport>();
         existingRoutes = new ArrayList<Route>();
-        aircraftSpawnTimer = AIRCRAFT_NO_DANGER_SPAWN_TIME;
+        aircraftSpawnTimer = 0;
         routeIdentifier = 0;
+        right = true;
+        left = false;
     }
 
     @Override
@@ -173,9 +196,7 @@ public class GameScreen1 implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Codigo de aviones en el fondo
 
-        aircraftSpawnTimer -= delta;
 
 
 
@@ -203,6 +224,7 @@ public class GameScreen1 implements Screen {
             airports.add(new Airport(xAirport3,yAirport3, 2));
         }
 
+
         //Asignacion de rutas
         if (!Airport.flag){
             for (Carrier carrier: carriers){
@@ -213,8 +235,9 @@ public class GameScreen1 implements Screen {
             System.out.println("Total routes: " +  existingRoutes.size());
         }
 
-        //Codigo de spawn de aviones (TEMPORAL)
-        if (aircraftSpawnTimer <= 0) {
+        //Codigo de spawn de aviones
+        aircraftSpawnTimer += delta;
+        if (aircraftSpawnTimer >= AIRCRAFT_SPAWN_TIME) {
                 int randomAirportIndex = Methods.randomAirportIndex();
                 int randomCarrierIndex = Methods.randomCarrierIndex();
 
@@ -224,26 +247,7 @@ public class GameScreen1 implements Screen {
 
                 if (carriers.get(randomCarrierIndex).getRoutes().size() != 0){
                     Route randomRoute = Methods.chooseRandomRoute(carriers.get(randomCarrierIndex).getRoutes());
-
-                    if (randomRoute.dangerLVL >= 0 && randomRoute.dangerLVL < 2){
-                        aircraftSpawnTimer = AIRCRAFT_NO_DANGER_SPAWN_TIME;
-                        aircrafts.add(new Aircraft(randomRoute));
-
-                    } else if (randomRoute.dangerLVL >= 2 && randomRoute.dangerLVL < 4){
-                        aircraftSpawnTimer = AIRCRAFT_LOW_DANGER_SPAWN_TIME;
-                        aircrafts.add(new Aircraft(randomRoute));
-
-                    } else if (randomRoute.dangerLVL >= 4 && randomRoute.dangerLVL < 8){
-                        aircraftSpawnTimer = AIRCRAFT_MEDIUM_DANGER_SPAWN_TIME;
-                        aircrafts.add(new Aircraft(randomRoute));
-
-                    } else if (randomRoute.dangerLVL >= 8){
-                        aircraftSpawnTimer = AIRCRAFT_HIGH_DANGER_SPAWN_TIME;
-                        aircrafts.add(new Aircraft(randomRoute));
-
-                    }
-
-
+                    aircrafts.add(new Aircraft(randomRoute));
                     System.out.println("Carrier " + carriers.get(randomCarrierIndex).identifier);
                     System.out.println("Has " + carriers.get(randomCarrierIndex).getRoutes().size() + " routes");
                     System.out.println();
@@ -255,10 +259,13 @@ public class GameScreen1 implements Screen {
                     System.out.println();
 
                 } else {
-
                     System.out.println("Carrier " + carriers.get(randomCarrierIndex).getIndex() + " has 0 routes assigned");
                 }
+                aircraftSpawnTimer = 0;
         }
+
+
+
 
         //Update de aviones (TEMPORAL)
         ArrayList<Aircraft> aircraftsToRemove = new ArrayList<Aircraft>();
@@ -279,12 +286,18 @@ public class GameScreen1 implements Screen {
         }
         explosions.removeAll(explosionsToRemove);
 
-        // codigo de disparos
+        // shooting code
         shootTimer += delta;
-        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer >= SHOOT_WAIT_TIME) {
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer >= SHOOT_WAIT_TIME_A) {
             shootTimer = 0;
+            if (SHOOT_WAIT_TIME_A >= 0.3f) {
+                SHOOT_WAIT_TIME_A = SHOOT_WAIT_TIME_A - 0.05f;
+            }
             bullets.add(new Bullet(x + 46));
+        } else if (!Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer >= SHOOT_WAIT_TIME_A) {
+            SHOOT_WAIT_TIME_A = 0.8f;
         }
+
         // update bullets
         ArrayList<Bullet> bulletsToRemove = new ArrayList<Bullet>();
         for (Bullet bullet : bullets) {
@@ -296,15 +309,29 @@ public class GameScreen1 implements Screen {
 
 
         // codigo de direccion
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+        moveTimer += delta;
+        if (moveTimer >= MOVE_WAIT_TIME && right) {
             tank = Aircraft.aircraft10right;
             x += SPEED * Gdx.graphics.getDeltaTime();
-
-
-            if (x + TANK_WIDTH > Main.WIDTH){
-                x = Main.WIDTH - TANK_WIDTH;
+            if (x + TANK_WIDTH > 900) {
+                x = 900 - TANK_WIDTH;
+                left = true;
+                right = false;
             }
-        } if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+            moveTimer = 0;
+        }
+
+        if (moveTimer >= MOVE_WAIT_TIME && left) {
+            tank = Aircraft.aircraft10left;
+            x -= SPEED * Gdx.graphics.getDeltaTime();
+            if (x < 0){
+                x = 0;
+                left = false;
+                right = true;
+            }
+            moveTimer = 0;
+        }
+         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
             tank = Aircraft.aircraft10left;
             x -= SPEED * Gdx.graphics.getDeltaTime();
             if (x < 0){
@@ -312,6 +339,12 @@ public class GameScreen1 implements Screen {
             }
         }
 
+        //route dmgLVL modification over time
+        dangerTimer += delta;
+        if (dangerTimer >= ROUTE_DANGER_TIMER) {
+            Methods.changeRouteDangerLVL(existingRoutes, carriers, airports);
+            dangerTimer = 0;
+        }
 
         //Check collisions bullet/aircraft
         for (Bullet bullet: bullets) {
@@ -325,6 +358,7 @@ public class GameScreen1 implements Screen {
                         aircraftsToRemove.add(aircraft);
                         explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
                         Methods.changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
+                        score += 100;
                     }
                 }
             }
@@ -338,8 +372,6 @@ public class GameScreen1 implements Screen {
                 aircraftsToRemove.add(aircraft);
             }
         }
-
-
         bullets.removeAll(bulletsToRemove);
         aircrafts.removeAll(aircraftsToRemove);
 
@@ -380,6 +412,22 @@ public class GameScreen1 implements Screen {
         }
 
         Methods.drawTerrain(600,700, 700, 740,town2, game);
+
+
+
+        // Airport/Carrier identifier render
+        for (Carrier carrier : carriers){
+            GlyphLayout layout = new GlyphLayout(font, " " + carrier.identifier);
+            font.draw(game.batch, layout, carrier.getX(), carrier.getY());
+        }
+        for (Airport airport : airports){
+            GlyphLayout layout = new GlyphLayout(font, " " + airport.identifier);
+            font.draw(game.batch, layout, airport.getX(), airport.getY());
+        }
+
+        // Score
+        GlyphLayout scoreLayout = new GlyphLayout(font, " " + score);
+        font.draw(game.batch, scoreLayout, 1000, 875);
 
         // Render bullets
         for (Bullet bullet : bullets) {

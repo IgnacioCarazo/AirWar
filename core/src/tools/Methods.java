@@ -62,22 +62,21 @@ public class Methods {
                 route.dangerLVL += 1;
             }
         }
-//        for (Carrier carrier: carriers){
-//            for (Route route : carrier.getRoutes()){
-//                if (route.identifier.equals(identifier)) {
-//                    route.dangerLVL += 1;
-//                }
+    }
+
+    public static void changeRouteDangerLVL(ArrayList<Route> routes, ArrayList<Carrier> carriers, ArrayList<Airport> airports) {
+//        for (Route route: routes){
+//            if (route.dangerLVL < 0){
+//                route.dangerLVL -= 1;
 //            }
 //        }
-//        for (Airport airport: airports) {
-//            if (airport.getRoutes().size() != 0) {
-//                for (Route route : airport.getRoutes()) {
-//                    if (route.identifier.equals(identifier)) {
-//                        route.dangerLVL += 1;
-//                    }
-//                }
-//            }
-//        }
+        for (Carrier carrier : carriers){
+            for (Route route : carrier.getRoutes()){
+                if (route.dangerLVL > 0){
+                    route.dangerLVL -= 1;
+                }
+            }
+        }
     }
 
     public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier){

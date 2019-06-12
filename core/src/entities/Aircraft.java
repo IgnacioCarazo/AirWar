@@ -16,7 +16,7 @@ public class Aircraft {
     public boolean invincible;
     public boolean destination;
     public Route route;
-
+    public int xDestiny, yDestiny;
     private int x, y;
 
 
@@ -141,6 +141,9 @@ public class Aircraft {
         this.rect = new CollisionRect(x, y, texture.getWidth(), texture.getHeight());
         this.invincible = false;
         this.destination = false;
+        this.xDestiny = 2;
+        this.yDestiny = 2;
+
 
     }
 
@@ -181,43 +184,7 @@ public class Aircraft {
         }
         rect.move(x,y);
     }
-//    public void update(float deltaTime, String dif){
-//
-//        if (x < xBase && y > yBase){
-//            texture = aircraft9down;
-//            x += SPEED * deltaTime;
-//            y -= SPEED * deltaTime;
-//        } else if (x > xBase && y > yBase){
-//            texture = aircraft9down;
-//            x -= SPEED * deltaTime;
-//            y -= SPEED * deltaTime;
-//        } else if (x < xBase && y < yBase){
-//            texture = aircraft9up;
-//            x += SPEED * deltaTime;
-//            y += SPEED * deltaTime;
-//        } else if (x > xBase && y < yBase){
-//            texture = aircraft9up;
-//            x -= SPEED * deltaTime;
-//            y += SPEED * deltaTime;
-//        } else if (y > yBase){
-//            texture = aircraft9down;
-//            y-=SPEED *deltaTime;
-//        }  else if (y < yBase){
-//            texture = aircraft9up;
-//            y+=SPEED *deltaTime;
-//        } else if (x > xBase){
-//            texture = aircraft9left;
-//            x-=SPEED *deltaTime;
-//        }  else if (x < xBase) {
-//            texture = aircraft9right;
-//            x += SPEED * deltaTime;
-//        }
-//        if (x == xBase && y == yBase){
-//            destination = true;
-//        }
-//
-//        rect.move(x,y);
-//    }
+
 
     public void update(float deltaTime, Route route){
         if (x < route.xEnd && y > route.yEnd){
@@ -249,9 +216,13 @@ public class Aircraft {
             texture = aircraft9right;
             x += SPEED * deltaTime;
         }
+//        if (x == xDestiny && y == yDestiny){
+//            destination = true;
+//        }
         if (x == route.xEnd && y == route.yEnd){
             destination = true;
         }
+
 
         rect.move(x,y);
     }
