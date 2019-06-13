@@ -4,6 +4,7 @@ package screens;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import entities.*;
 import com.airwar.Main;
 import com.badlogic.gdx.Gdx;
@@ -23,24 +24,11 @@ import java.util.concurrent.TimeoutException;
 public class GameScreen1 implements Screen {
 
     // constants
-    private static final int SPEED = 300;
-    private static final float MOVE_WAIT_TIME = 0.02f;
-    private static final int TANK_WIDTH = 92;
-    public static final int TANK_HEIGHT = 110;
+    private final int SPEED = 300;
+    private final float MOVE_WAIT_TIME = 0.02f;
     private static float SHOOT_WAIT_TIME_A = 0.8f;
-    private static final float SHOOT_WAIT_TIME_B = 0.7f;
-    private static final float SHOOT_WAIT_TIME_C = 0.6f;
-    private static final float SHOOT_WAIT_TIME_D = 0.5f;
-    private static final float SHOOT_WAIT_TIME_E = 0.4f;
-    private static final float SHOOT_WAIT_TIME_F = 0.3f;
-    private static final float SHOOT_WAIT_TIME_G = 0.2f;
-    private static final float SHOOT_WAIT_TIME_H = 0.1f;
-    private static final float AIRCRAFT_SPAWN_TIME = 2f;
+    private static final float AIRCRAFT_SPAWN_TIME = 1f;
     private static final float ROUTE_DANGER_TIMER = 10f;
-
-
-    public static final int AIRPORTS = 3;
-    public static final int CARRIERS = 2;
 
     //statics
     public static int routeIdentifier;
@@ -67,44 +55,41 @@ public class GameScreen1 implements Screen {
     private Texture forest4;
     private Texture town1;
     private Texture town2;
-    private Texture grass0;
-    private Texture grass1;
-    private Texture grass2;
-    private Texture grass3;
-    private Texture grass4;
-    private Texture grass5;
-    private Texture grass6;
-    private Texture grass7;
-    private Texture grass8;
-    private Texture grass9;
-    private Texture grass10;
-    private Texture grass11;
-    private Texture grass12;
     private Texture largeMountain;
     private Texture smallMountain;
     private Texture carrier_vertical;
     private Texture carrier_horizontal;
+    private Texture rotor;
+    private Texture copter;
+    private Texture goback;
+    private Texture pause;
+    private Texture unpause;
+    private Texture home;
 
     // tools
     private String direction;
     private ShapeRenderer shapeRender;
-    private int x, y;
+    private float x, y;
     private float aircraftSpawnTimer;
     private float shootTimer;
     private float moveTimer;
     private float dangerTimer;
+    private float rocketTimer;
     private boolean left;
     private boolean right;
     private BitmapFont font;
     private Main game;
+    private int rocketSpeed;
+    private boolean paused;
+    private Screen savedScreen;
 
     // Entities
     private ArrayList<Bullet> bullets;
+    private ArrayList<Rocket> rockets;
     private ArrayList<Explosion> explosions;
     private ArrayList<Aircraft> aircrafts;
     private ArrayList<Carrier> carriers;
     private ArrayList<Airport> airports;
-    private ArrayList<Texture> grass_tiles;
 
 
     public GameScreen1(Main game){
@@ -114,12 +99,13 @@ public class GameScreen1 implements Screen {
         shootTimer = 0;
         moveTimer = 0;
         dangerTimer = 0;
+        rocketSpeed = 300;
         aircrafts = new ArrayList<Aircraft>();
         explosions = new ArrayList<Explosion>();
         bullets = new ArrayList<Bullet>();
+        rockets = new ArrayList<Rocket>();
         carriers = new ArrayList<Carrier>();
         shapeRender = new ShapeRenderer();
-        grass_tiles = new ArrayList<Texture>();
         airports = new ArrayList<Airport>();
         existingRoutes = new ArrayList<Route>();
         aircraftSpawnTimer = 0;
@@ -128,27 +114,17 @@ public class GameScreen1 implements Screen {
         left = false;
     }
 
+
+
+
     @Override
     public void show() {
-        tank = Aircraft.aircraft10right;
+        home = new Texture("home.png");
         sky = new Texture("sky.jpg");
         sea = new Texture("sea_small.png");
         grass = new Texture("terrain_center_small.png");
         carrier_vertical = new Texture("carrier_vertical.png");
         carrier_horizontal = new Texture("carrier_horizontal.png");
-        grass0 = new Texture("grass_corner_northwest_f1.png");
-        grass1 = new Texture("grass_corner_northeast_f1.png");
-        grass2 = new Texture("grass_corner_inner_northwest_f1.png");
-        grass3 = new Texture("grass_edge_north_A_f1.png");
-        grass4 = new Texture("grass_corner_inner_northeast_f1.png");
-        grass5 = new Texture("grass_edge_west_A_f1.png");
-        grass6 = new Texture("grass_center_A_f1.png");
-        grass7 = new Texture("grass_edge_east_A_f1.png");
-        grass8 = new Texture("grass_corner_inner_southwest_f1.png");
-        grass9 = new Texture("grass_edge_south_A_f1.png");
-        grass10 = new Texture("grass_corner_inner_southwest_f1.png");
-        grass11 = new Texture("grass_corner_southwest_f1.png");
-        grass12 = new Texture("grass_corner_southeast_f1.png");
         smallMountain = new Texture("mountain_small.png");
         largeMountain = new Texture("mountain_medium.png");
         cliff_top = new Texture("terrain_edge_south_A_f1.png");
@@ -166,21 +142,11 @@ public class GameScreen1 implements Screen {
         forest4 =  new Texture("tree_D.png");
         town1 =  new Texture("town_C.png");
         town2 =  new Texture("town_D.png");
-
-        grass_tiles.add(grass0);
-        grass_tiles.add(grass);
-        grass_tiles.add(grass1);
-        grass_tiles.add(grass3);
-        grass_tiles.add(grass5);
-        grass_tiles.add(grass6);
-        grass_tiles.add(grass7);
-        grass_tiles.add(grass8);
-        grass_tiles.add(grass9);
-        grass_tiles.add(grass10);
-        grass_tiles.add(grass11);
-        grass_tiles.add(grass);
-        grass_tiles.add(grass12);
-
+        copter = new Texture("copter.png");
+        rotor = new Texture("rotor.png");
+        goback = new Texture("return.png");
+        pause = new Texture("pause.png");
+        unpause = new Texture("forward.png");
 
     }
 
@@ -196,7 +162,10 @@ public class GameScreen1 implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        if (paused){
+            delta = 0;
 
+        }
 
 
 
@@ -286,16 +255,42 @@ public class GameScreen1 implements Screen {
         }
         explosions.removeAll(explosionsToRemove);
 
-        // shooting code
+        // shooting code bullets
         shootTimer += delta;
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer >= SHOOT_WAIT_TIME_A) {
             shootTimer = 0;
             if (SHOOT_WAIT_TIME_A >= 0.3f) {
                 SHOOT_WAIT_TIME_A = SHOOT_WAIT_TIME_A - 0.05f;
             }
-            bullets.add(new Bullet(x + 46));
+            bullets.add(new Bullet(x +  15));
+
         } else if (!Gdx.input.isKeyPressed(Input.Keys.SPACE) && shootTimer >= SHOOT_WAIT_TIME_A) {
             SHOOT_WAIT_TIME_A = 0.8f;
+        }
+
+        //shooting code rockets
+        if (Gdx.input.isKeyPressed(Input.Keys.R ) && shootTimer >= SHOOT_WAIT_TIME_A) {
+            rocketTimer += delta;
+            shootTimer = 0;
+            if (Gdx.input.isKeyPressed(Input.Keys.R)) {
+                if (rocketTimer >= 5f) {
+                    rockets.add(new Rocket(x, 800));
+                    rocketTimer = 0;
+
+                } else if (rocketTimer >= 4f) {
+                    rockets.add(new Rocket(x, 600));
+                    rocketTimer = 0;
+
+                } else if (rocketTimer >= 3f) {
+                    rockets.add(new Rocket(x, 400));
+                    rocketTimer = 0;
+
+                } else if (rocketTimer < 3f) {
+                    rockets.add(new Rocket(x, 200));
+                    rocketTimer = 0;
+
+                }
+            }
         }
 
         // update bullets
@@ -307,14 +302,22 @@ public class GameScreen1 implements Screen {
             }
         }
 
+        // update rockets
+        ArrayList<Rocket> rocketsToRemove = new ArrayList<Rocket>();
+        for (Rocket rocket : rockets) {
+            rocket.update(delta);
+            if (rocket.remove) {
+                rocketsToRemove.add(rocket);
+            }
+        }
+
 
         // codigo de direccion
         moveTimer += delta;
         if (moveTimer >= MOVE_WAIT_TIME && right) {
-            tank = Aircraft.aircraft10right;
             x += SPEED * Gdx.graphics.getDeltaTime();
-            if (x + TANK_WIDTH > 900) {
-                x = 900 - TANK_WIDTH;
+            if (x + copter.getWidth() > 900) {
+                x = 900 - copter.getWidth();
                 left = true;
                 right = false;
             }
@@ -322,7 +325,6 @@ public class GameScreen1 implements Screen {
         }
 
         if (moveTimer >= MOVE_WAIT_TIME && left) {
-            tank = Aircraft.aircraft10left;
             x -= SPEED * Gdx.graphics.getDeltaTime();
             if (x < 0){
                 x = 0;
@@ -332,7 +334,6 @@ public class GameScreen1 implements Screen {
             moveTimer = 0;
         }
          if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            tank = Aircraft.aircraft10left;
             x -= SPEED * Gdx.graphics.getDeltaTime();
             if (x < 0){
                 x = 0;
@@ -364,7 +365,23 @@ public class GameScreen1 implements Screen {
             }
         }
 
+        //Check collisions rocket/aircraft
+        for (Rocket rocket: rockets) {
+            for (Aircraft aircraft: aircrafts) {
+                if (rocket.getCollisionRect().collideWith(aircraft.getCollisionRect())){
+                    if (aircraft.invincible) {
+                        rocketsToRemove.add(rocket);
 
+                    } else {
+                        rocketsToRemove.add(rocket);
+                        aircraftsToRemove.add(aircraft);
+                        explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
+                        Methods.changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
+                        score += 100;
+                    }
+                }
+            }
+        }
 
         //Check collisions aircraft/carrier
         for (Aircraft aircraft: aircrafts){
@@ -374,12 +391,13 @@ public class GameScreen1 implements Screen {
         }
         bullets.removeAll(bulletsToRemove);
         aircrafts.removeAll(aircraftsToRemove);
+        rockets.removeAll(rocketsToRemove);
 
         game.batch.begin(); // Le dice al compilador que va a empezar a dibujar imagenes
+
+        //Map rendering
         Methods.drawTerrain(0,900,0,900, grass, game);
-
         Methods.drawTerrain(600,1200,130,900, grass,game);
-
         Methods.drawTerrain(300,600,130,630, sea,game);
         Methods.drawTerrain(600,900,430,630,sea,game);
         Methods.drawTerrain(0,300,130,900, grass,game);
@@ -390,29 +408,23 @@ public class GameScreen1 implements Screen {
         Methods.drawTerrain(610,900,430,440, cliff_bottom,game);
         Methods.drawTerrain(300,600,130,140, cliff_bottom,game);
         Methods.drawTerrain(0,900,850,900,largeMountain,game);
-
-
-
         game.batch.draw(top_left,300,625);
         game.batch.draw(top_left_sea,600,430);
         game.batch.draw(bottom_left,300,130);
         game.batch.draw(bottom_right,600,130);
         game.batch.draw(sky,900,0);
-        game.batch.draw(tank, x, y);
+        game.batch.draw(copter,x,y);
+        game.batch.draw(rotor, x + copter.getWidth() + 17 - rotor.getWidth(),20);
         game.batch.draw(smallMountain, 120,400);
-
         Methods.drawTerrain(120,120 + smallMountain.getWidth(),400,415,forest1, game);
-        Methods.drawTerrain(0,890,90,95,forest4,game);
-
+        Methods.drawTerrain(0,890,87,92,forest4,game);
         int towny = 130;
         int townx = 670;
         for (int i = 0; i < 9; i++) {
             game.batch.draw(town1,townx,towny);
             towny += 30;
         }
-
         Methods.drawTerrain(600,700, 700, 740,town2, game);
-
 
 
         // Airport/Carrier identifier render
@@ -427,11 +439,15 @@ public class GameScreen1 implements Screen {
 
         // Score
         GlyphLayout scoreLayout = new GlyphLayout(font, " " + score);
-        font.draw(game.batch, scoreLayout, 1000, 875);
+        font.draw(game.batch, scoreLayout, 950, 875);
 
         // Render bullets
         for (Bullet bullet : bullets) {
             bullet.render(game.batch);
+        }
+        // Render rockets
+        for (Rocket rocket : rockets) {
+            rocket.render(game.batch);
         }
         // Render Carriers
         for (Carrier carrier : carriers) {
@@ -452,8 +468,59 @@ public class GameScreen1 implements Screen {
         for (Explosion explosion : explosions) {
             explosion.render(game.batch);
         }
+        Carrier.flag = true;
+        Airport.flag = true;
+        //buttons
 
+        //Home button
+        if (Gdx.input.getX() < 960 && Gdx.input.getX() > 915 && Gdx.input.getY() < 880 && Gdx.input.getY() > 850){
+            game.batch.draw(home,920,15);
+            if (Gdx.input.isTouched()) {
+                this.dispose();
+                Airport.flag = false;
+                Carrier.flag = false;
+                game.setScreen(new MainMenu(game));
+            }
+        } else {
+            game.batch.draw(home,915,10);
+        }
+        //Return button
+        if (Gdx.input.getX() < 1005 && Gdx.input.getX() > 960 && Gdx.input.getY() < 880 && Gdx.input.getY() > 850){
+            game.batch.draw(goback,965,15);
+            if (Gdx.input.isTouched()) {
+                this.dispose();
+                Airport.flag = false;
+                Carrier.flag = false;
+                game.setScreen(new MapScreen(game));
+            }
+        } else {
+            game.batch.draw(goback,960,10);
+        }
+        //Pause button
+        if (Gdx.input.getX() < 1050 && Gdx.input.getX() > 1005 && Gdx.input.getY() < 880 && Gdx.input.getY() > 850){
+            if (paused){
+                game.batch.draw(unpause,1010,10);
 
+            } else {
+                game.batch.draw(pause,1010,15);
+
+            }
+            if (Gdx.input.isTouched()) {
+                if (paused){
+                    paused = false;
+                } else {
+                    paused = true;
+                }
+            }
+        } else {
+            if (paused){
+                game.batch.draw(unpause,1005,5);
+
+            } else {
+                game.batch.draw(pause,1005,10);
+
+            }
+        }
 
 
 
@@ -462,8 +529,7 @@ public class GameScreen1 implements Screen {
                 Methods.drawDottedLine(shapeRender,5,route.xStart + 40, route.yStart,route.xEnd + 50, route.yEnd);
             }
 
-        Carrier.flag = true;
-        Airport.flag = true;
+
     }
 
 
@@ -494,7 +560,6 @@ public class GameScreen1 implements Screen {
 
     @Override
     public void dispose() {
-        tank.dispose();
 
     }
 }

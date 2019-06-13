@@ -2,17 +2,17 @@ package tools;
 
 public class CollisionRect {
 
-    int x,y;
+    float x,y;
     int width, height;
 
-     public CollisionRect(int x, int y, int width, int height){
+     public CollisionRect(float x, float y, int width, int height){
          this.x = x;
          this.y = y;
          this.width = width;
          this.height = height;
      }
 
-     public void move (int x, int y){
+     public void move (float x, float y){
          this.x = x;
          this.y = y;
      }

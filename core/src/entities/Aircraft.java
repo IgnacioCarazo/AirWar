@@ -11,7 +11,8 @@ import java.util.ArrayList;
 public class Aircraft {
 
     private static final int SPEED = 100;
-    private static Texture texture;
+    private Texture textureOne; //Menu texture
+    private Texture texture; //ingame texture
     private CollisionRect rect;
     public boolean invincible;
     public boolean destination;
@@ -29,11 +30,6 @@ public class Aircraft {
 
 
     public int airportAssigned, carrierAssigned;
-
-    public static void setTexture(Texture texture) {
-        Aircraft.texture = texture;
-    }
-
 
 
 
@@ -89,8 +85,7 @@ public class Aircraft {
 
     private ArrayList<Texture> downSprites;
 
-
-
+    // Menu Builder
     public Aircraft(int x,int y,int index){
         this.x = x;
         this.y = Gdx.graphics.getHeight();
@@ -107,46 +102,15 @@ public class Aircraft {
         downSprites.add(aircraft10down);
 
 
-        if (texture == null){
+        if (textureOne == null){
             System.out.println(index);
-            texture = downSprites.get(index);
+            textureOne = downSprites.get(index);
         }
-        this.rect = new CollisionRect(x,y,texture.getWidth(),texture.getHeight());
+        this.rect = new CollisionRect(x,y,textureOne.getWidth(),textureOne.getHeight());
 
 
     }
-    public Aircraft(int x,int y, int indexAssigned,String entityAssigned) {
-        this.x = x;
-        this.y = y;
-        downSprites = new ArrayList<Texture>();
-        downSprites.add(aircraft1down);
-        downSprites.add(aircraft2down);
-        downSprites.add(aircraft3down);
-        downSprites.add(aircraft4down);
-        downSprites.add(aircraft5down);
-        downSprites.add(aircraft6down);
-        downSprites.add(aircraft7down);
-        downSprites.add(aircraft8down);
-        downSprites.add(aircraft9down);
-        downSprites.add(aircraft10down);
-
-        if (texture == null) {
-            texture = aircraft9down;
-        }
-        if (entityAssigned.equals("carriers")){
-            this.carrierAssigned = indexAssigned;
-        } else {
-            this.airportAssigned = indexAssigned;
-        }
-        this.rect = new CollisionRect(x, y, texture.getWidth(), texture.getHeight());
-        this.invincible = false;
-        this.destination = false;
-        this.xDestiny = 2;
-        this.yDestiny = 2;
-
-
-    }
-
+    //GameScreen Builder
     public Aircraft(Route route) {
         this.x = route.xStart;
         this.y = route.yStart;
@@ -168,52 +132,52 @@ public class Aircraft {
         } else {
             this.airportAssigned = route.index;
         }
-        if (texture == null) {
-            texture = aircraft9down;
+        if (textureOne == null) {
+            this.textureOne = aircraft9down;
         }
 
-        this.rect = new CollisionRect(x, y, texture.getWidth(), texture.getHeight());
+        this.rect = new CollisionRect(x, y, textureOne.getWidth(), textureOne.getHeight());
         this.invincible = false;
         this.destination = false;
 
     }
+    //Menu Update
     public void update(float deltaTime){
         y -= SPEED * deltaTime;
-        if (y < -texture.getHeight()){
+        if (y < -textureOne.getHeight()){
             remove = true;
         }
         rect.move(x,y);
     }
-
-
+    //InGame Update
     public void update(float deltaTime, Route route){
         if (x < route.xEnd && y > route.yEnd){
-            texture = aircraft9down;
+            this.textureOne = aircraft9down;
             x += SPEED * deltaTime;
             y -= SPEED * deltaTime;
         } else if (x > route.xEnd && y > route.yEnd){
-            texture = aircraft9down;
+            this.textureOne = aircraft9down;
             x -= SPEED * deltaTime;
             y -= SPEED * deltaTime;
         } else if (x < route.xEnd && y < route.yEnd){
-            texture = aircraft9up;
+            this.textureOne = aircraft9up;
             x += SPEED * deltaTime;
             y += SPEED * deltaTime;
         } else if (x > route.xEnd && y < route.yEnd){
-            texture = aircraft9up;
+            this.textureOne = aircraft9up;
             x -= SPEED * deltaTime;
             y += SPEED * deltaTime;
         } else if (y > route.yEnd){
-            texture = aircraft9down;
+            this.textureOne = aircraft9down;
             y-=SPEED *deltaTime;
         }  else if (y < route.yEnd){
-            texture = aircraft9up;
+            this.textureOne = aircraft9up;
             y+=SPEED *deltaTime;
         } else if (x > route.xEnd){
-            texture = aircraft9left;
+            this.textureOne = aircraft9left;
             x-=SPEED *deltaTime;
         }  else if (x < route.xEnd) {
-            texture = aircraft9right;
+            this.textureOne = aircraft9right;
             x += SPEED * deltaTime;
         }
 //        if (x == xDestiny && y == yDestiny){
@@ -226,12 +190,11 @@ public class Aircraft {
 
         rect.move(x,y);
     }
-
-
+    //Aircraft renderizer
     public void render(SpriteBatch batch) {
-        batch.draw(texture, x, y);
+        batch.draw(this.textureOne, x, y);
     }
-
+    //Hitbox
     public CollisionRect getCollisionRect(){
         return rect;
     }

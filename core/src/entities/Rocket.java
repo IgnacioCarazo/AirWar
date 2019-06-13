@@ -5,12 +5,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import tools.CollisionRect;
 
-public class Bullet {
+public class Rocket {
 
-    public static final int SPEED = 300;
     public static final int DEFAULT_Y = 80;
     private static Texture texture;
-
+    private int speed;
     CollisionRect rect;
 
     float x, y;
@@ -19,18 +18,18 @@ public class Bullet {
 
 
 
-    public Bullet(float x){
+    public Rocket(float x, int speed){
         this.x = x;
         this.y = DEFAULT_Y;
-
-        this.rect = new CollisionRect(x,y,12,12);
+        this.speed = speed;
+        this.rect = new CollisionRect(x,y,7,20);
 
         if (texture == null){
-            texture = new Texture("bullet_orange0.png");
+            texture = new Texture("rocket_purple.png");
         }
     }
     public void update(float deltaTime){
-        y += SPEED * deltaTime;
+        y += speed * deltaTime;
         if (y > Gdx.graphics.getHeight()){
             remove = true;
         }
@@ -45,3 +44,4 @@ public class Bullet {
         return rect;
     }
 }
+

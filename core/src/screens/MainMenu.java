@@ -1,5 +1,7 @@
 package screens;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import entities.Aircraft;
 import com.airwar.Main;
 import com.badlogic.gdx.Gdx;
@@ -24,6 +26,7 @@ public class MainMenu implements Screen {
     private Texture playButton;
     private Texture scoreButton;
     private Texture sky;
+
     ArrayList<Aircraft> aircrafts;
 
 
@@ -36,7 +39,6 @@ public class MainMenu implements Screen {
     public MainMenu (Main game){
         this.game = game;
 
-        sky = new Texture("sky.jpg");
         aircrafts = new ArrayList<Aircraft>();
         random = new Random();
         aircraftSpawnTimer = random.nextFloat() * (MAX_AIRCRAFT_SPAWN_TIME - MIN_AIRCRAFT_SPAWN_TIME) + MIN_AIRCRAFT_SPAWN_TIME;
@@ -49,6 +51,8 @@ public class MainMenu implements Screen {
         playButton = new Texture("play_button.png");
         quitButton = new Texture("quit_button.png");
         scoreButton = new Texture("score_button.png");
+        sky = new Texture("sky.jpg");
+
     }
 
     @Override
@@ -91,7 +95,7 @@ public class MainMenu implements Screen {
             game.batch.draw(playButton,505,505);
             if (Gdx.input.isTouched()) {
                 this.dispose();
-                game.setScreen(new GameScreen1(game));
+                game.setScreen(new MapScreen(game));
             }
         } else {
             game.batch.draw(playButton,500,500);
@@ -114,8 +118,6 @@ public class MainMenu implements Screen {
             game.batch.draw(quitButton,500,300);
 
         }
-
-
 
         game.batch.end();
     }
