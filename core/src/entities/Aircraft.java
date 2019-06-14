@@ -16,7 +16,9 @@ public class Aircraft {
     private CollisionRect rect;
     public boolean invincible;
     public boolean destination;
+    public ArrayList<Route> routesToFollow;
     public Route route;
+    public int routeIndex;
     public int xDestiny, yDestiny;
     private int x, y;
 
@@ -103,7 +105,6 @@ public class Aircraft {
 
 
         if (textureOne == null){
-            System.out.println(index);
             textureOne = downSprites.get(index);
         }
         this.rect = new CollisionRect(x,y,textureOne.getWidth(),textureOne.getHeight());
@@ -114,7 +115,11 @@ public class Aircraft {
     public Aircraft(Route route) {
         this.x = route.xStart;
         this.y = route.yStart;
+        this.routeIndex = 0;
         this.route = route;
+//        Codigo para que funcione por listas de rutas
+//        this.routesToFollow = routesToFollow;
+//        this.route = routesToFollow.get(routeIndex);
         downSprites = new ArrayList<Texture>();
         downSprites.add(aircraft1down);
         downSprites.add(aircraft2down);
@@ -132,9 +137,7 @@ public class Aircraft {
         } else {
             this.airportAssigned = route.index;
         }
-        if (textureOne == null) {
-            this.textureOne = aircraft9down;
-        }
+        this.textureOne = aircraft9down;
 
         this.rect = new CollisionRect(x, y, textureOne.getWidth(), textureOne.getHeight());
         this.invincible = false;
@@ -180,10 +183,13 @@ public class Aircraft {
             this.textureOne = aircraft9right;
             x += SPEED * deltaTime;
         }
-//        if (x == xDestiny && y == yDestiny){
-//            destination = true;
-//        }
         if (x == route.xEnd && y == route.yEnd){
+            destination = true; //TEMPORAL
+            invincible = true;
+        } else {
+            invincible = false;
+        }
+        if (xDestiny == route.xEnd && yDestiny == route.yEnd){
             destination = true;
         }
 

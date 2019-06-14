@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import entities.*;
 import com.airwar.Main;
 import com.badlogic.gdx.Gdx;
@@ -14,6 +15,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import grafomatriz.MatrizAdyacencia;
+import grafomatriz.Recorrido;
 import tools.Methods;
 import tools.Route;
 
@@ -21,20 +24,26 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
-public class GameScreen1 implements Screen {
+import static com.badlogic.gdx.math.MathUtils.random;
+import static tools.Methods.addroute;
 
+public class GameScreen1 implements Screen {
     // constants
-    private final int SPEED = 300;
+    private final int MEDIUM_SPEED = 300;
+    private final int LOW_SPEED = 200;
+    private final int HIGH_SPEED = 400;
     private final float MOVE_WAIT_TIME = 0.02f;
-    private static float SHOOT_WAIT_TIME_A = 0.8f;
-    private static final float AIRCRAFT_SPAWN_TIME = 1f;
-    private static final float ROUTE_DANGER_TIMER = 10f;
+    private final float AIRCRAFT_SPAWN_TIME = 1f;
+    private final float ROUTE_DANGER_TIMER = 20f;
+    private final float AIRCRAFT_ENTITY_MIN_WAIT_TIME = 3F;
+    private final float AIRCRAFT_ENTITY_MAX_WAIT_TIME = 6F;
+    private final float MOVE_SPEED_CHANGE_MIN_WAIT_TIME = 5F;
+    private final float MOVE_SPEED_CHANGE_MAX_WAIT_TIME = 10F;
 
     //statics
     public static int routeIdentifier;
     public static ArrayList<Route> existingRoutes;
     public static int score;
-
     // Textures in Screen
     private Texture cliff_top;
     private Texture cliff_bottom;
@@ -65,24 +74,27 @@ public class GameScreen1 implements Screen {
     private Texture pause;
     private Texture unpause;
     private Texture home;
-
-    // tools
-    private String direction;
-    private ShapeRenderer shapeRender;
-    private float x, y;
+   //timers
+    private float moveSpeedTimer;
+    private float aircraftWaitTimer;
     private float aircraftSpawnTimer;
     private float shootTimer;
     private float moveTimer;
     private float dangerTimer;
     private float rocketTimer;
+    // tools
+    private ShapeRenderer shapeRender;
+    private float x, y;
     private boolean left;
     private boolean right;
     private BitmapFont font;
     private Main game;
     private int rocketSpeed;
     private boolean paused;
-    private Screen savedScreen;
-
+    private int nodeQuantity;
+    private float SHOOT_WAIT_TIME_A = 0.8f;
+    private ArrayList<Integer> movementSpeeds;
+    private int tempspeed;
     // Entities
     private ArrayList<Bullet> bullets;
     private ArrayList<Rocket> rockets;
@@ -90,15 +102,21 @@ public class GameScreen1 implements Screen {
     private ArrayList<Aircraft> aircrafts;
     private ArrayList<Carrier> carriers;
     private ArrayList<Airport> airports;
-
+    //Pathfinding
+    private Recorrido actualPaths;
+    private MatrizAdyacencia grafo;
 
     public GameScreen1(Main game){
         this.game = game;
         font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
+        font.getData().setScale((float) 0.5);
         score = 0;
+        tempspeed = 0;
         shootTimer = 0;
         moveTimer = 0;
         dangerTimer = 0;
+        moveSpeedTimer = random.nextFloat() * (MOVE_SPEED_CHANGE_MAX_WAIT_TIME - MOVE_SPEED_CHANGE_MIN_WAIT_TIME) + MOVE_SPEED_CHANGE_MIN_WAIT_TIME;
+        aircraftWaitTimer = random.nextFloat() * (AIRCRAFT_ENTITY_MAX_WAIT_TIME - AIRCRAFT_ENTITY_MIN_WAIT_TIME) + AIRCRAFT_ENTITY_MIN_WAIT_TIME;
         rocketSpeed = 300;
         aircrafts = new ArrayList<Aircraft>();
         explosions = new ArrayList<Explosion>();
@@ -108,14 +126,15 @@ public class GameScreen1 implements Screen {
         shapeRender = new ShapeRenderer();
         airports = new ArrayList<Airport>();
         existingRoutes = new ArrayList<Route>();
+        movementSpeeds = new ArrayList<Integer>();
+        movementSpeeds.add(LOW_SPEED);
+        movementSpeeds.add(MEDIUM_SPEED);
+        movementSpeeds.add(HIGH_SPEED);
         aircraftSpawnTimer = 0;
         routeIdentifier = 0;
         right = true;
         left = false;
     }
-
-
-
 
     @Override
     public void show() {
@@ -147,15 +166,7 @@ public class GameScreen1 implements Screen {
         goback = new Texture("return.png");
         pause = new Texture("pause.png");
         unpause = new Texture("forward.png");
-
     }
-
-
-
-
-
-
-
 
     @Override
     public void render(float delta) {
@@ -164,21 +175,17 @@ public class GameScreen1 implements Screen {
 
         if (paused){
             delta = 0;
-
         }
-
-
-
         //Spawn Carriers
         if (!Carrier.flag) {
                 int xCarrier1 = 600 + (int) (Math.random() * ((700 - 600) + 1));
                 int xCarrier2 = 300 + (int) (Math.random() * ((400 - 300) + 1));
                 int yCarrier1 = 430 + (int) (Math.random() * ((630 - 430) + 1));
                 int yCarrier2 = 130 + (int) (Math.random() * ((630 - 130) + 1));
-                carriers.add(new Carrier(xCarrier1, yCarrier1,0));
-                carriers.add(new Carrier(xCarrier2, yCarrier2,1));
+                carriers.add(new Carrier(xCarrier1, yCarrier1,routeIdentifier));
+                carriers.add(new Carrier(xCarrier2, yCarrier2,routeIdentifier));
+                nodeQuantity += 2;
         }
-
         //Spawn Airports
         if (!Airport.flag) {
             int xAirport1 = (int) (Math.random() * ((200) + 1));
@@ -188,21 +195,101 @@ public class GameScreen1 implements Screen {
             int xAirport3 = 220 + (int) (Math.random() * ((800 - 220) + 1));
             int yAirport3 = 700 + (int) (Math.random() * ((800 - 700) + 1));
 
-            airports.add(new Airport(xAirport1, yAirport1, 0));
-            airports.add(new Airport(xAirport2, yAirport2, 1));
-            airports.add(new Airport(xAirport3,yAirport3, 2));
+            airports.add(new Airport(xAirport1, yAirport1, routeIdentifier));
+            airports.add(new Airport(xAirport2, yAirport2, routeIdentifier));
+            airports.add(new Airport(xAirport3,yAirport3, routeIdentifier));
+            nodeQuantity += 3;
         }
 
 
-        //Asignacion de rutas
         if (!Airport.flag){
+            //creacion de Grafo de rutas en blanco
+            grafo = new MatrizAdyacencia(nodeQuantity);
+            //Asignacion de rutas
             for (Carrier carrier: carriers){
-                carrier.setRoutes(Methods.assignCarrierRoutes(carriers,airports,carrier));
+                carrier.setRoutes(Methods.assignCarrierRoutes(carriers,airports,carrier, game));
+                ArrayList<Route> routes =  carrier.getRoutes();
+                addroute(grafo,routes); //Adds every single DIRECT carrie's route
             }
             for (Airport airport: airports){
+                airport.setRoutes(Methods.assignAirportRoutes(carriers,airports,airport, game));
+                ArrayList<Route> routes =  airport.getRoutes();
+                addroute(grafo,routes); //Adds every single DIRECT airport's route
             }
             System.out.println("Total routes: " +  existingRoutes.size());
+
+            try {
+                actualPaths =  new Recorrido(grafo);
+                int[][] matriz = actualPaths.matrizWarshall;
+
+                for(Carrier carrier: carriers){
+                    System.out.println("destinos de " +carrier.intidentifier+":");
+                    for (int j = 0; j < matriz.length ; j++) {
+                        ArrayList<Route> route = new ArrayList<Route>();
+                        if(matriz[j][carrier.getIndex()] == 1 ){
+                            if (j != carrier.getIndex()){
+                                ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(carrier.getIndex(),j);
+                                while(temp.size()>=2){
+                                    for (Route existingRoute:existingRoutes){
+                                        if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
+                                            route.add(existingRoute);
+                                        }
+                                    }
+                                    temp.remove(0);
+                                }
+                            }
+                            if (route.size() >= 1) {
+                                System.out.println("tamaño de ruta: " + route.size());
+
+                                for (Route route1 : route) {
+                                    System.out.println(route1.identifier);
+                                }
+                                carrier.destiny.add(route);
+                            }
+                        }
+
+                    }
+                }
+                for(Airport airport: airports){
+                    System.out.println("destinos de " +airport.intidentifier+":");
+                    for (int j = 0; j < matriz.length ; j++) {
+                        ArrayList<Route> route = new ArrayList<Route>();
+                        if(matriz[j][airport.getIndex()] == 1 ){
+                            if (j != airport.getIndex()){
+                                ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(airport.getIndex(),j);
+                                while(temp.size()>=2){
+                                    for (Route existingRoute:existingRoutes){
+                                        if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
+                                            route.add(existingRoute);
+                                        }
+                                    }
+                                    temp.remove(0);
+                                }
+                            }
+                            if (route.size() >= 1) {
+                                System.out.println("tamaño de ruta: " + route.size());
+
+                                for (Route route1 : route) {
+                                    System.out.println(route1.identifier);
+                                }
+                                airport.destiny.add(route);
+                            }
+                        }
+                    }
+
+                }
+            }catch(Exception a){
+                System.out.println("Error al generar los caminos mas cortos 1st Time");
+            }
+
+
         }
+
+
+
+
+
+        //Codigo de rutas mas cortas
 
         //Codigo de spawn de aviones
         aircraftSpawnTimer += delta;
@@ -214,32 +301,39 @@ public class GameScreen1 implements Screen {
                 ports.add("carriers");
                 ports.add("airports");
 
-                if (carriers.get(randomCarrierIndex).getRoutes().size() != 0){
-                    Route randomRoute = Methods.chooseRandomRoute(carriers.get(randomCarrierIndex).getRoutes());
+                if (ports.get(randomCarrierIndex).equals("carriers")){
+                    if (randomAirportIndex > 1){
+                        randomCarrierIndex = 1;
+                    }
+                    Route randomRoute = Methods.chooseRandomRouteCarrier(carriers.get(randomCarrierIndex).getRoutes());
                     aircrafts.add(new Aircraft(randomRoute));
-                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).identifier);
-                    System.out.println("Has " + carriers.get(randomCarrierIndex).getRoutes().size() + " routes");
-                    System.out.println();
-                    System.out.println("Atributos de la ruta:");
-                    System.out.println("Ruta " + randomRoute.identifier);
-                    System.out.println("From " + randomRoute.entity + " "+ randomRoute.identifier.charAt(0) + " to " + randomRoute.entityAssigned + " " + randomRoute.identifier.charAt(1));
-                    System.out.println("Danger LVL: " + randomRoute.dangerLVL);
-                    System.out.println("Wait time: " + aircraftSpawnTimer);
-                    System.out.println();
-
                 } else {
-                    System.out.println("Carrier " + carriers.get(randomCarrierIndex).getIndex() + " has 0 routes assigned");
+                    Route randomRoute = Methods.chooseRandomRouteAirport(airports.get(randomAirportIndex).getRoutes());
+                    aircrafts.add(new Aircraft(randomRoute));
+                    System.out.println(randomRoute.identifier);
+                    System.out.println("damage: "+randomRoute.dangerLVL);
                 }
                 aircraftSpawnTimer = 0;
         }
 
-
-
-
-        //Update de aviones (TEMPORAL)
+        //Update de aviones
         ArrayList<Aircraft> aircraftsToRemove = new ArrayList<Aircraft>();
+        aircraftWaitTimer -= delta;
         for (Aircraft aircraft: aircrafts) {
             aircraft.update(delta, aircraft.route);
+//              CODIGO PARA QUE FUNICONE POR LISTA DE RUTAS
+//            if (aircraft.getX() == aircraft.route.xEnd && aircraft.getY() == aircraft.route.yEnd){
+//                if (aircraft.routeIndex < aircraft.routesToFollow.size()){
+//                    aircraft.invincible = true;
+//                    if (aircraftWaitTimer <=0 ){
+//                    aircraftWaitTimer = random.nextFloat() * (AIRCRAFT_ENTITY_MAX_WAIT_TIME - AIRCRAFT_ENTITY_MIN_WAIT_TIME) + AIRCRAFT_ENTITY_MIN_WAIT_TIME;
+//                    aircraft.route = aircraft.routesToFollow.get(aircraft.routeIndex);
+//                    aircraft.invincible = false;
+//                    }
+//                } else {
+//                    aircraft.destination = true;
+//                }
+//            }
             if (aircraft.remove){
                 aircraftsToRemove.add(aircraft);
             }
@@ -311,11 +405,20 @@ public class GameScreen1 implements Screen {
             }
         }
 
-
         // codigo de direccion
         moveTimer += delta;
+        moveSpeedTimer -= delta;
+        if (!Airport.flag){
+            int number = (int) (Math.random() * (3));
+            tempspeed = movementSpeeds.get(number);
+        }
+        if (moveSpeedTimer <= 0){
+            int number = (int) (Math.random() * (3));
+            tempspeed = movementSpeeds.get(number);
+            moveSpeedTimer = random.nextFloat() * (MOVE_SPEED_CHANGE_MAX_WAIT_TIME - MOVE_SPEED_CHANGE_MIN_WAIT_TIME) + MOVE_SPEED_CHANGE_MIN_WAIT_TIME;
+        }
         if (moveTimer >= MOVE_WAIT_TIME && right) {
-            x += SPEED * Gdx.graphics.getDeltaTime();
+            x += tempspeed * Gdx.graphics.getDeltaTime();
             if (x + copter.getWidth() > 900) {
                 x = 900 - copter.getWidth();
                 left = true;
@@ -325,7 +428,7 @@ public class GameScreen1 implements Screen {
         }
 
         if (moveTimer >= MOVE_WAIT_TIME && left) {
-            x -= SPEED * Gdx.graphics.getDeltaTime();
+            x -= tempspeed * Gdx.graphics.getDeltaTime();
             if (x < 0){
                 x = 0;
                 left = false;
@@ -333,12 +436,8 @@ public class GameScreen1 implements Screen {
             }
             moveTimer = 0;
         }
-         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            x -= SPEED * Gdx.graphics.getDeltaTime();
-            if (x < 0){
-                x = 0;
-            }
-        }
+
+
 
         //route dmgLVL modification over time
         dangerTimer += delta;
@@ -360,6 +459,32 @@ public class GameScreen1 implements Screen {
                         explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
                         Methods.changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
                         score += 100;
+                        for (Carrier carrier : carriers){
+                            for (Route route : carrier.getRoutes()){
+                                if (aircraft.route.identifier.equals(route.identifier)){
+                                    if (route.dangerLVL >= 2){
+                                        route.dmgweight += 5000;
+                                    }
+                                    if (route.dangerLVL == 1 ){
+                                        route.dmgweight += 300;
+                                    }
+                                }
+
+                            }
+                        }
+                        for (Airport airport : airports){
+                            for (Route route : airport.getRoutes()){
+                                if (aircraft.route.identifier.equals(route.identifier)){
+                                    if (route.dangerLVL >= 2){
+                                        route.dmgweight += 5000;
+                                    }
+                                    if (route.dangerLVL == 1 ){
+                                        route.dmgweight += 300;
+                                    }
+                                }
+
+                            }
+                        }
                     }
                 }
             }
@@ -438,9 +563,29 @@ public class GameScreen1 implements Screen {
         }
 
         // Score
-        GlyphLayout scoreLayout = new GlyphLayout(font, " " + score);
-        font.draw(game.batch, scoreLayout, 950, 875);
+        GlyphLayout scoreLayout = new GlyphLayout(font, "SCORE");
+        font.draw(game.batch, scoreLayout, 1000, 875);
+        GlyphLayout scoreLayout2 = new GlyphLayout(font, " " + score);
+        font.draw(game.batch, scoreLayout2, 997, 855);
 
+
+        // Route
+        GlyphLayout routeLayout = new GlyphLayout(font, "ROUTE");
+        font.draw(game.batch, routeLayout, 905, 805);
+        // Weight
+        GlyphLayout weightLayout = new GlyphLayout(font, "WEIGHT");
+        font.draw(game.batch, weightLayout, 1000, 805);
+        // Route/Weight data
+            int posy = 785;
+            for (Route route : existingRoutes){
+                GlyphLayout temprouteLayout = new GlyphLayout(font, " " + route.identifier);
+                font.draw(game.batch, temprouteLayout, 900, posy);
+                // Weight
+                int tempweight = route.weight + route.dmgweight;
+                GlyphLayout tempweightLayout = new GlyphLayout(font, " " + tempweight );
+                font.draw(game.batch, tempweightLayout, 1000, posy);
+                posy -= 20;
+            }
         // Render bullets
         for (Bullet bullet : bullets) {
             bullet.render(game.batch);
@@ -522,6 +667,11 @@ public class GameScreen1 implements Screen {
             }
         }
 
+        //Speed layout
+        GlyphLayout tempSpeedLayoutA = new GlyphLayout(font, "CURRENT SPEED");
+        font.draw(game.batch, tempSpeedLayoutA, 950, 150);
+        GlyphLayout tempSpeedLayoutB = new GlyphLayout(font, "" + tempspeed);
+        font.draw(game.batch, tempSpeedLayoutB, 1020, 120);
 
 
         game.batch.end();// le dice al compilador que ya no va a dibujar mas imagenes
@@ -532,34 +682,23 @@ public class GameScreen1 implements Screen {
 
     }
 
-
     private ArrayList<Route> createRandomRoutes() {
         ArrayList<Route> routes = new ArrayList<Route>();
         return routes;
     }
 
     @Override
-    public void resize(int width, int height) {
-
-    }
+    public void resize(int width, int height) {}
 
     @Override
-    public void pause() {
-
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-
-    }
+    public void hide() {}
 
     @Override
-    public void dispose() {
-
-    }
+    public void dispose() {}
 }

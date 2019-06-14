@@ -12,6 +12,7 @@ import java.util.ArrayList;
 public class Carrier {
     private static Texture texture;
     private ArrayList<Route> routes;
+    public ArrayList<ArrayList<Route>> destiny;
     public int getX() {
         return x;
     }
@@ -20,6 +21,7 @@ public class Carrier {
         return y;
     }
     public char identifier;
+    public int intidentifier;
     public static boolean flag;
 
     public void setRoutes(ArrayList<Route> routes) {
@@ -50,9 +52,11 @@ public class Carrier {
         if (texture == null){
             texture = new Texture("carrier_horizontal.png");
         }
+        this.intidentifier = GameScreen1.routeIdentifier;
         this.identifier = Methods.assignRouteIdentifier(GameScreen1.routeIdentifier);
         this.rect = new CollisionRect(x,y,texture.getWidth()/2,texture.getHeight()/2);
         GameScreen1.routeIdentifier += 1;
+        this.destiny = new ArrayList<ArrayList<Route>>();
 
     }
     public void update(float deltaTime){

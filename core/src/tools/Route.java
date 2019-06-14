@@ -2,8 +2,9 @@ package tools;
 
 public class Route {
     public int weight;
-    public int index;
-    public int indexAssigned;
+    public int dmgweight;
+    public int index;//start
+    public int indexAssigned;//end
     public int xStart;
     public int yStart;
     public int xEnd;
@@ -24,5 +25,13 @@ public class Route {
         this.xEnd = xEnd;
         this.yEnd = yEnd;
         this.dangerLVL = dangerLVL;
+        this.dmgweight = 0;
+        if (entityAssigned.equals("carrier")){
+            weight += 10;
+        }
+        int width = Math.abs(xStart-xEnd);
+        int height = Math.abs(yStart-yEnd);
+        int hipotenuse = (int) Math.sqrt((int) Math.pow(width,2) + (int) Math.pow(height,2));
+        weight += hipotenuse;
     }
 }

@@ -20,12 +20,13 @@ public class Airport {
         return y;
     }
     public char identifier;
-
+    public int intidentifier;
     public static boolean flag;
     private CollisionRect rect;
 
     private int x, y, index;
     private ArrayList<Route> routes;
+    public ArrayList<ArrayList<Route>> destiny;
 
 
     public int getIndex() {
@@ -53,9 +54,11 @@ public class Airport {
         if (texture == null){
             texture = new Texture("airport.png");
         }
+        this.intidentifier = GameScreen1.routeIdentifier;
         this.identifier = Methods.assignRouteIdentifier(GameScreen1.routeIdentifier);
         this.rect = new CollisionRect(x,y,texture.getWidth()/3,texture.getHeight()/3);
         GameScreen1.routeIdentifier += 1;
+        this.destiny = new ArrayList<ArrayList<Route>>();
 
     }
     public void update(float deltaTime){
