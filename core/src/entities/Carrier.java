@@ -45,6 +45,10 @@ public class Carrier {
         this.index = index;
     }
 
+    public ArrayList<ArrayList<Route>> getDestiny() {
+        return destiny;
+    }
+
     public Carrier(int x, int y, int index){
         this.x = x;
         this.y = y;

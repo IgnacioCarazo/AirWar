@@ -45,6 +45,10 @@ public class Airport {
         this.routes = routes;
     }
 
+    public ArrayList<ArrayList<Route>> getDestiny() {
+        return destiny;
+    }
+
     public Airport(int x, int y, int index){
         this.x = x;
         this.y = y;

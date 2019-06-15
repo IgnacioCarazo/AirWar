@@ -19,8 +19,12 @@ public class Aircraft {
     public ArrayList<Route> routesToFollow;
     public Route route;
     public int routeIndex;
+
+
+
     public int xDestiny, yDestiny;
     private int x, y;
+    public int identifier;
 
 
     public int getX() {
@@ -112,14 +116,14 @@ public class Aircraft {
 
     }
     //GameScreen Builder
-    public Aircraft(Route route) {
+    public Aircraft(ArrayList<Route> routes, int identifier) {
+        this.routesToFollow = routes;
+        this.route = routesToFollow.get(routeIndex);
         this.x = route.xStart;
         this.y = route.yStart;
         this.routeIndex = 0;
-        this.route = route;
+        this.identifier = identifier;
 //        Codigo para que funcione por listas de rutas
-//        this.routesToFollow = routesToFollow;
-//        this.route = routesToFollow.get(routeIndex);
         downSprites = new ArrayList<Texture>();
         downSprites.add(aircraft1down);
         downSprites.add(aircraft2down);
@@ -144,6 +148,10 @@ public class Aircraft {
         this.destination = false;
 
     }
+    public ArrayList<Route> getRoutesToFollow() {
+        return routesToFollow;
+    }
+
     //Menu Update
     public void update(float deltaTime){
         y -= SPEED * deltaTime;
@@ -183,17 +191,7 @@ public class Aircraft {
             this.textureOne = aircraft9right;
             x += SPEED * deltaTime;
         }
-        if (x == route.xEnd && y == route.yEnd){
-            destination = true; //TEMPORAL
-            invincible = true;
-        } else {
-            invincible = false;
-        }
-        if (xDestiny == route.xEnd && yDestiny == route.yEnd){
-            destination = true;
-        }
-
-
+        System.out.println(route.identifier);
         rect.move(x,y);
     }
     //Aircraft renderizer

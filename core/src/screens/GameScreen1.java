@@ -33,10 +33,10 @@ public class GameScreen1 implements Screen {
     private final int LOW_SPEED = 200;
     private final int HIGH_SPEED = 400;
     private final float MOVE_WAIT_TIME = 0.02f;
-    private final float AIRCRAFT_SPAWN_TIME = 1f;
+    private final float AIRCRAFT_SPAWN_TIME = 2f;
     private final float ROUTE_DANGER_TIMER = 20f;
-    private final float AIRCRAFT_ENTITY_MIN_WAIT_TIME = 3F;
-    private final float AIRCRAFT_ENTITY_MAX_WAIT_TIME = 6F;
+    private final float AIRCRAFT_ENTITY_MIN_WAIT_TIME = 1F;
+    private final float AIRCRAFT_ENTITY_MAX_WAIT_TIME = 2F;
     private final float MOVE_SPEED_CHANGE_MIN_WAIT_TIME = 5F;
     private final float MOVE_SPEED_CHANGE_MAX_WAIT_TIME = 10F;
 
@@ -95,6 +95,7 @@ public class GameScreen1 implements Screen {
     private float SHOOT_WAIT_TIME_A = 0.8f;
     private ArrayList<Integer> movementSpeeds;
     private int tempspeed;
+    public int aircraftNumber = 0;
     // Entities
     private ArrayList<Bullet> bullets;
     private ArrayList<Rocket> rockets;
@@ -218,69 +219,7 @@ public class GameScreen1 implements Screen {
             }
             System.out.println("Total routes: " +  existingRoutes.size());
 
-            try {
-                actualPaths =  new Recorrido(grafo);
-                int[][] matriz = actualPaths.matrizWarshall;
-
-                for(Carrier carrier: carriers){
-                    System.out.println("destinos de " +carrier.intidentifier+":");
-                    for (int j = 0; j < matriz.length ; j++) {
-                        ArrayList<Route> route = new ArrayList<Route>();
-                        if(matriz[j][carrier.getIndex()] == 1 ){
-                            if (j != carrier.getIndex()){
-                                ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(carrier.getIndex(),j);
-                                while(temp.size()>=2){
-                                    for (Route existingRoute:existingRoutes){
-                                        if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
-                                            route.add(existingRoute);
-                                        }
-                                    }
-                                    temp.remove(0);
-                                }
-                            }
-                            if (route.size() >= 1) {
-                                System.out.println("tamaño de ruta: " + route.size());
-
-                                for (Route route1 : route) {
-                                    System.out.println(route1.identifier);
-                                }
-                                carrier.destiny.add(route);
-                            }
-                        }
-
-                    }
-                }
-                for(Airport airport: airports){
-                    System.out.println("destinos de " +airport.intidentifier+":");
-                    for (int j = 0; j < matriz.length ; j++) {
-                        ArrayList<Route> route = new ArrayList<Route>();
-                        if(matriz[j][airport.getIndex()] == 1 ){
-                            if (j != airport.getIndex()){
-                                ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(airport.getIndex(),j);
-                                while(temp.size()>=2){
-                                    for (Route existingRoute:existingRoutes){
-                                        if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
-                                            route.add(existingRoute);
-                                        }
-                                    }
-                                    temp.remove(0);
-                                }
-                            }
-                            if (route.size() >= 1) {
-                                System.out.println("tamaño de ruta: " + route.size());
-
-                                for (Route route1 : route) {
-                                    System.out.println(route1.identifier);
-                                }
-                                airport.destiny.add(route);
-                            }
-                        }
-                    }
-
-                }
-            }catch(Exception a){
-                System.out.println("Error al generar los caminos mas cortos 1st Time");
-            }
+            Methods.addRouteArrayList(grafo, carriers,airports, existingRoutes, actualPaths);
 
 
         }
@@ -305,15 +244,15 @@ public class GameScreen1 implements Screen {
                     if (randomAirportIndex > 1){
                         randomCarrierIndex = 1;
                     }
-                    Route randomRoute = Methods.chooseRandomRouteCarrier(carriers.get(randomCarrierIndex).getRoutes());
-                    aircrafts.add(new Aircraft(randomRoute));
+                    ArrayList<Route> randomRoute = Methods.chooseRandomRouteCarrier(carriers.get(randomCarrierIndex).getDestiny());
+                    aircrafts.add(new Aircraft(randomRoute,aircraftNumber));
                 } else {
-                    Route randomRoute = Methods.chooseRandomRouteAirport(airports.get(randomAirportIndex).getRoutes());
-                    aircrafts.add(new Aircraft(randomRoute));
-                    System.out.println(randomRoute.identifier);
-                    System.out.println("damage: "+randomRoute.dangerLVL);
+                    ArrayList<Route> randomRoute = Methods.chooseRandomRouteAirport(airports.get(randomAirportIndex).getDestiny());
+                    aircrafts.add(new Aircraft(randomRoute,aircraftNumber));
+
                 }
-                aircraftSpawnTimer = 0;
+            aircraftNumber ++;
+            aircraftSpawnTimer = 0;
         }
 
         //Update de aviones
@@ -322,18 +261,19 @@ public class GameScreen1 implements Screen {
         for (Aircraft aircraft: aircrafts) {
             aircraft.update(delta, aircraft.route);
 //              CODIGO PARA QUE FUNICONE POR LISTA DE RUTAS
-//            if (aircraft.getX() == aircraft.route.xEnd && aircraft.getY() == aircraft.route.yEnd){
-//                if (aircraft.routeIndex < aircraft.routesToFollow.size()){
-//                    aircraft.invincible = true;
-//                    if (aircraftWaitTimer <=0 ){
-//                    aircraftWaitTimer = random.nextFloat() * (AIRCRAFT_ENTITY_MAX_WAIT_TIME - AIRCRAFT_ENTITY_MIN_WAIT_TIME) + AIRCRAFT_ENTITY_MIN_WAIT_TIME;
-//                    aircraft.route = aircraft.routesToFollow.get(aircraft.routeIndex);
-//                    aircraft.invincible = false;
-//                    }
-//                } else {
-//                    aircraft.destination = true;
-//                }
-//            }
+            if (aircraft.getX() == aircraft.route.xEnd && aircraft.getY() == aircraft.route.yEnd){
+                if (aircraft.routeIndex < aircraft.routesToFollow.size()){
+                    aircraft.invincible = true;
+                    if (aircraftWaitTimer <=0 ){
+                    aircraftWaitTimer = random.nextFloat() * (AIRCRAFT_ENTITY_MAX_WAIT_TIME - AIRCRAFT_ENTITY_MIN_WAIT_TIME) + AIRCRAFT_ENTITY_MIN_WAIT_TIME;
+                    aircraft.route = aircraft.routesToFollow.get(aircraft.routeIndex);
+                    aircraft.invincible = false;
+                    aircraft.routeIndex ++;
+                    }
+                } else {
+                    aircraft.destination = true;
+                }
+            }
             if (aircraft.remove){
                 aircraftsToRemove.add(aircraft);
             }
@@ -551,6 +491,20 @@ public class GameScreen1 implements Screen {
         }
         Methods.drawTerrain(600,700, 700, 740,town2, game);
 
+        // Aircraft identifier
+        int ypos = 400;
+
+        for (Aircraft aircraft : aircrafts){
+            GlyphLayout Alayout = new GlyphLayout(font, " " + aircraft.identifier);
+            font.draw(game.batch, Alayout, aircraft.getX(), aircraft.getY());
+            GlyphLayout layout1 = new GlyphLayout(font, "A" + aircraft.identifier);
+            font.draw(game.batch, layout1, 905, ypos);
+            GlyphLayout layout2 = new GlyphLayout(font, "" + Methods.printRoutes(aircraft.routesToFollow));
+            font.draw(game.batch, layout2, 960, ypos);
+
+            ypos -= 20;
+        }
+
 
         // Airport/Carrier identifier render
         for (Carrier carrier : carriers){
@@ -578,13 +532,15 @@ public class GameScreen1 implements Screen {
         // Route/Weight data
             int posy = 785;
             for (Route route : existingRoutes){
-                GlyphLayout temprouteLayout = new GlyphLayout(font, " " + route.identifier);
-                font.draw(game.batch, temprouteLayout, 900, posy);
-                // Weight
-                int tempweight = route.weight + route.dmgweight;
-                GlyphLayout tempweightLayout = new GlyphLayout(font, " " + tempweight );
-                font.draw(game.batch, tempweightLayout, 1000, posy);
-                posy -= 20;
+                if (route.index != route.indexAssigned) {
+                    GlyphLayout temprouteLayout = new GlyphLayout(font, " " + route.identifier);
+                    font.draw(game.batch, temprouteLayout, 900, posy);
+                    // Weight
+                    int tempweight = route.weight + route.dmgweight;
+                    GlyphLayout tempweightLayout = new GlyphLayout(font, " " + tempweight);
+                    font.draw(game.batch, tempweightLayout, 1000, posy);
+                    posy -= 20;
+                }
             }
         // Render bullets
         for (Bullet bullet : bullets) {

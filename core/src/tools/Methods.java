@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import entities.Airport;
 import entities.Carrier;
 import grafomatriz.MatrizAdyacencia;
+import grafomatriz.Recorrido;
 import screens.GameScreen1;
 
 import java.util.ArrayList;
@@ -51,11 +52,11 @@ public class Methods {
         }
     }
 
-    public static Route chooseRandomRouteAirport(ArrayList<Route> list){
+    public static ArrayList<Route> chooseRandomRouteAirport(ArrayList<ArrayList<Route>> list){
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
-    public static Route chooseRandomRouteCarrier(ArrayList<Route> list){
+    public static ArrayList<Route> chooseRandomRouteCarrier(ArrayList<ArrayList<Route>> list){
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
@@ -249,6 +250,8 @@ public class Methods {
         return true;
     }
 
+
+
     public static char assignRouteIdentifier(int index)
     {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -259,7 +262,6 @@ public class Methods {
         for (int i = 0; i < routes.size(); i++) {
             Route route = routes.get(i);
             try{
-                System.out.println(route.index +"-"+ route.indexAssigned);
                 grafo.agregarArco(route.index,route.indexAssigned, route.weight);
             }catch (Exception e){
                 System.out.println("error al agregar ruta al grafo:");
@@ -268,4 +270,74 @@ public class Methods {
             }
         }
     }
+
+    public static void addRouteArrayList(MatrizAdyacencia grafo, ArrayList<Carrier> carriers,ArrayList<Airport> airports, ArrayList<Route> existingRoutes, Recorrido actualPaths){
+        try {
+            actualPaths =  new Recorrido(grafo);
+            int[][] matriz = actualPaths.matrizWarshall;
+
+            for(Carrier carrier: carriers){
+//                System.out.println("destinos de " +carrier.intidentifier+":");
+                for (int j = 0; j < matriz.length ; j++) {
+                    ArrayList<Route> route = new ArrayList<Route>();
+                    if(matriz[j][carrier.getIndex()] == 1 ){
+                        if (j != carrier.getIndex()){
+                            ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(carrier.getIndex(),j);
+                            while(temp.size()>=2){
+                                for (Route existingRoute:existingRoutes){
+                                    if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
+                                        route.add(existingRoute);
+                                    }
+                                }
+                                temp.remove(0);
+                            }
+                        }
+                        if (route.size() >= 1) {
+
+                            for (Route route1 : route) {
+                            }
+                            carrier.destiny.add(route);
+                        }
+                    }
+
+                }
+            }
+            for(Airport airport: airports){
+                for (int j = 0; j < matriz.length ; j++) {
+                    ArrayList<Route> route = new ArrayList<Route>();
+                    if(matriz[j][airport.getIndex()] == 1 ){
+                        if (j != airport.getIndex()){
+                            ArrayList<Integer> temp =  actualPaths.obtenerCaminoMasCorto(airport.getIndex(),j);
+                            while(temp.size()>=2){
+                                for (Route existingRoute:existingRoutes){
+                                    if (existingRoute.index==temp.get(0)&&existingRoute.indexAssigned==temp.get(1)){
+                                        route.add(existingRoute);
+                                    }
+                                }
+                                temp.remove(0);
+                            }
+                        }
+                        if (route.size() >= 1) {
+
+                            for (Route route1 : route) {
+                            }
+                            airport.destiny.add(route);
+                        }
+                    }
+                }
+
+            }
+        }catch(Exception a){
+            System.out.println("Error al generar los caminos mas cortos 1st Time");
+        }
+
+        }
+
+        public static String printRoutes(ArrayList<Route> routes){
+        String string = "";
+        for (Route route : routes){
+            string += route.identifier + " ";
+        }
+        return string;
+        }
 }
