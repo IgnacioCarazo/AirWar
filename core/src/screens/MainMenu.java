@@ -15,24 +15,24 @@ import java.util.Random;
 public class MainMenu implements Screen {
 
 
-    public static final float MIN_AIRCRAFT_SPAWN_TIME = 0.1f;
-    public static final float MAX_AIRCRAFT_SPAWN_TIME = 5f;
+    private static final float MIN_AIRCRAFT_SPAWN_TIME = 0.1f;
+    private static final float MAX_AIRCRAFT_SPAWN_TIME = 5f;
 
-    float aircraftSpawnTimer;
-    int x;
-    Main game;
+    private float aircraftSpawnTimer;
+    private int x;
+    private Main game;
     boolean flag = true;
     private Texture quitButton;
     private Texture playButton;
     private Texture scoreButton;
     private Texture sky;
 
-    ArrayList<Aircraft> aircrafts;
+    private ArrayList<Aircraft> aircrafts;
 
 
 
 
-    Random random;
+    private Random random;
 
 
 
@@ -116,9 +116,7 @@ public class MainMenu implements Screen {
             }
         } else {
             game.batch.draw(quitButton,500,300);
-
         }
-
         game.batch.end();
     }
 

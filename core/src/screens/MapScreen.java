@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import tools.Methods;
 
 public class MapScreen implements Screen {
     private Main game;
@@ -93,7 +94,6 @@ public class MapScreen implements Screen {
         } else {
             game.batch.draw(home,825,200);
         }
-
         game.batch.end();
     }
 

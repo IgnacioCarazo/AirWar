@@ -123,7 +123,6 @@ public class Aircraft {
         this.y = route.yStart;
         this.routeIndex = 0;
         this.identifier = identifier;
-//        Codigo para que funcione por listas de rutas
         downSprites = new ArrayList<Texture>();
         downSprites.add(aircraft1down);
         downSprites.add(aircraft2down);
@@ -191,7 +190,6 @@ public class Aircraft {
             this.textureOne = aircraft9right;
             x += SPEED * deltaTime;
         }
-        System.out.println(route.identifier);
         rect.move(x,y);
     }
     //Aircraft renderizer
