@@ -33,7 +33,7 @@ public class GameScreen1 implements Screen {
 
     //statics
     public static int routeIdentifier;
-    public static ArrayList<Route> existingRoutes;
+    public  ArrayList<Route> existingRoutes;
     public static int score;
     // Textures in Screen
     private Texture cliff_top;
@@ -87,6 +87,8 @@ public class GameScreen1 implements Screen {
     private ArrayList<Integer> movementSpeeds;
     private int tempspeed;
     public int aircraftNumber = 0;
+    private String username;
+
     // Entities
     private ArrayList<Bullet> bullets;
     private ArrayList<Rocket> rockets;
@@ -99,7 +101,8 @@ public class GameScreen1 implements Screen {
     private Recorrido actualPaths;
     private MatrizAdyacencia grafo;
 
-    public GameScreen1(Main game){
+    public GameScreen1(Main game, String username){
+        this.username = username;
         this.game = game;
         font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
         font.getData().setScale((float) 0.5);
@@ -420,10 +423,11 @@ public class GameScreen1 implements Screen {
 
         // Score
         GlyphLayout scoreLayout = new GlyphLayout(font, "SCORE");
-        font.draw(game.batch, scoreLayout, 1000, 875);
+        font.draw(game.batch, scoreLayout, 905, 855);
         GlyphLayout scoreLayout2 = new GlyphLayout(font, " " + score);
-        font.draw(game.batch, scoreLayout2, 997, 855);
-
+        font.draw(game.batch, scoreLayout2, 900, 835);
+        GlyphLayout usernameLayout = new GlyphLayout(font, "" + username);
+        font.draw(game.batch, usernameLayout, 905, 875);
 
         // Route
         GlyphLayout routeLayout = new GlyphLayout(font, "ROUTE");
@@ -534,6 +538,12 @@ public class GameScreen1 implements Screen {
         game.batch.end();// le dice al compilador que ya no va a dibujar mas imagenes
             for (Route route: existingRoutes){
                 Methods.drawDottedLine(shapeRender,5,route.xStart + 40, route.yStart,route.xEnd + 50, route.yEnd);
+            }
+
+
+            if (aircraftNumber == 30){
+                this.dispose();
+                game.setScreen(new MainMenu(game));
             }
     }
 

@@ -2,11 +2,14 @@ package screens;
 
 import com.airwar.Main;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import tools.Methods;
 
 public class MapScreen implements Screen {
@@ -17,13 +20,14 @@ public class MapScreen implements Screen {
     private Texture map3;
     private Texture home;
     private BitmapFont font;
+    private String username;
 
 
 
     public MapScreen(Main game){
         this.game = game;
         this.font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
-
+        this.username = "";
     }
     @Override
     public void show() {
@@ -52,7 +56,7 @@ public class MapScreen implements Screen {
             game.batch.draw(map1,205,505);
             if (Gdx.input.isTouched()) {
                 this.dispose();
-                game.setScreen(new GameScreen1(game));
+                game.setScreen(new GameScreen1(game, username));
             }
         } else {
             game.batch.draw(map1,200,500);
@@ -64,7 +68,7 @@ public class MapScreen implements Screen {
             game.batch.draw(map2,205,105);
             if (Gdx.input.isTouched()) {
                 this.dispose();
-                game.setScreen(new GameScreen2(game));
+                game.setScreen(new GameScreen2(game, username));
             }
         } else {
             game.batch.draw(map2,200,100);
@@ -76,7 +80,7 @@ public class MapScreen implements Screen {
             game.batch.draw(map3,805,505);
             if (Gdx.input.isTouched()) {
                 this.dispose();
-                game.setScreen(new GameScreen3(game));
+                game.setScreen(new GameScreen3(game, username));
             }
         } else {
             game.batch.draw(map3,800,500);
@@ -94,6 +98,13 @@ public class MapScreen implements Screen {
         } else {
             game.batch.draw(home,825,200);
         }
+
+        username = Methods.keyPressed(username);
+        GlyphLayout layoutUserName = new GlyphLayout(font, "USERNAME:");
+        font.draw(game.batch, layoutUserName, 200, 80);
+        GlyphLayout layoutUser = new GlyphLayout(font, "" + username);
+        font.draw(game.batch, layoutUser, 550, 80);
+
         game.batch.end();
     }
 

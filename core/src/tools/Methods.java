@@ -1,13 +1,14 @@
 package tools;
 
 import com.airwar.Main;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import entities.*;
 import grafomatriz.MatrizAdyacencia;
 import grafomatriz.Recorrido;
-import screens.GameScreen1;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -243,17 +244,17 @@ public class Methods {
         return list.get(rand.nextInt(list.size()));
     }
 
-    private static void createCarrierRouteA1(Carrier carrier, Carrier carrierAssigned, ArrayList<Route> routes,ArrayList<Route> existingRoutes, int routeIdentifier){
+    private static void createCarrierToCarrierRoute(Carrier carrier, Carrier carrierAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
         Route route = new Route("carrier","carrier",carrier.getIndex(),carrierAssigned.getIndex(),carrier.getX(),carrier.getY(),carrierAssigned.getX(),carrierAssigned.getY(),0);
         StringBuilder ID = new StringBuilder().append(carrier.identifier).append("-").append(carrierAssigned.identifier);
         route.identifier = String.valueOf(ID);
         if (canCreate(existingRoutes,route)) {
             routes.add(route);
-            GameScreen1.existingRoutes.add(route);
-            GameScreen1.routeIdentifier ++;
+            existingRoutes.add(route);
+            routeIdentifier ++;
         }
     }
-    private static void createAirportRouteA1(Carrier carrier, Airport airportAssigned, ArrayList<Route> routes,ArrayList<Route> existingRoutes, int routeIdentifier){
+    private static void createCarrierToAirportRoute(Carrier carrier, Airport airportAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
         Route route = new Route("carrier","airport",carrier.getIndex(),airportAssigned.getIndex(), carrier.getX(),carrier.getY(),airportAssigned.getX(),airportAssigned.getY(),0);
         StringBuilder ID = new StringBuilder().append(carrier.identifier).append("-").append(airportAssigned.identifier);
         route.identifier = String.valueOf(ID);
@@ -264,7 +265,7 @@ public class Methods {
         }
     }
 
-    private static void createCarrierRouteB1(Airport airport, Carrier carrierAssigned, ArrayList<Route> routes,ArrayList<Route> existingRoutes, int routeIdentifier){
+    private static void createAirportToCarrierRoute(Airport airport, Carrier carrierAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
         Route route = new Route("airport","carrier",airport.getIndex(),carrierAssigned.getIndex(),airport.getX(),airport.getY(),carrierAssigned.getX(),carrierAssigned.getY(),0);
         StringBuilder ID = new StringBuilder().append(airport.identifier).append("-").append(carrierAssigned.identifier);
         route.identifier = String.valueOf(ID);
@@ -275,7 +276,7 @@ public class Methods {
         }
     }
 
-    private static void createAirportRouteB1(Airport airport, Airport airportAssigned, ArrayList<Route> routes,ArrayList<Route> existingRoutes, int routeIdentifier){
+    private static void createAirportToAirportRoute(Airport airport, Airport airportAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
         Route route = new Route("airport","airport",airport.getIndex(),airportAssigned.getIndex(), airport.getX(),airport.getY(),airportAssigned.getX(),airportAssigned.getY(),0);
         StringBuilder ID = new StringBuilder().append(airport.identifier).append("-").append(airportAssigned.identifier);
         route.identifier = String.valueOf(ID);
@@ -311,19 +312,19 @@ public class Methods {
             if (port.equals("carriers")){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);
                 if (randomCarrierIndex != unavailable) {
-                    createCarrierRouteA1(carrier, carrierAssigned, routes, existingRoutes, routeIdentifier);
+                    createCarrierToCarrierRoute(carrier, carrierAssigned, routes, existingRoutes, routeIdentifier);
                 }
             } else {
                 Airport airportAssigned = airports.get(randomAirportIndex);
-                createAirportRouteA1(carrier,airportAssigned,routes, existingRoutes, routeIdentifier);
+                createCarrierToAirportRoute(carrier,airportAssigned,routes, existingRoutes, routeIdentifier);
                 }
             if (routes.size() != routesToAssign -1){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);
                 if (randomCarrierIndex != unavailable) {
-                    createCarrierRouteA1(carrier, carrierAssigned, routes, existingRoutes, routeIdentifier);
+                    createCarrierToCarrierRoute(carrier, carrierAssigned, routes, existingRoutes, routeIdentifier);
                 }
                 Airport airportAssigned = airports.get(randomAirportIndex);
-                createAirportRouteA1(carrier,airportAssigned,routes, existingRoutes, routeIdentifier);
+                createCarrierToAirportRoute(carrier,airportAssigned,routes, existingRoutes, routeIdentifier);
             }
             }
         return routes;
@@ -350,19 +351,19 @@ public class Methods {
 
             if (port.equals("carriers")){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);
-                createCarrierRouteB1(airport, carrierAssigned, routes, existingRoutes, routeIdentifier);
+                createAirportToCarrierRoute(airport, carrierAssigned, routes, existingRoutes, routeIdentifier);
             } else {
                 Airport airportAssigned = airports.get(randomAirportIndex);
                 if (randomAirportIndex != unavailable){
-                    createAirportRouteB1(airport,airportAssigned,routes, existingRoutes, routeIdentifier);
+                    createAirportToAirportRoute(airport,airportAssigned,routes, existingRoutes, routeIdentifier);
                 }
             }
             if (routes.size() != routesToAssign -1){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);
-                createCarrierRouteB1(airport, carrierAssigned, routes, existingRoutes, routeIdentifier);
+                createAirportToCarrierRoute(airport, carrierAssigned, routes, existingRoutes, routeIdentifier);
                 Airport airportAssigned = airports.get(randomAirportIndex);
                 if (randomAirportIndex != unavailable){
-                    createAirportRouteB1(airport,airportAssigned,routes, existingRoutes, routeIdentifier);
+                    createAirportToAirportRoute(airport,airportAssigned,routes, existingRoutes, routeIdentifier);
                 }
             }
         }
@@ -422,5 +423,95 @@ public class Methods {
             shapeRenderer.point(x1 + vec2.x, y1 + vec2.y, 0);
         }
         shapeRenderer.end();
+    }
+
+    public static String keyPressed(String username){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A)){
+            username = username.concat("A");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
+            username = username.concat("B");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.C)){
+            username = username.concat("C");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.D)){
+            username = username.concat("D");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)){
+            username = username.concat("E");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)){
+            username = username.concat("F");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
+            username = username.concat("G");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)){
+            username = username.concat("H");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)){
+            username = username.concat("I");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)){
+            username = username.concat("J");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)){
+            username = username.concat("K");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
+            username = username.concat("L");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)){
+            username = username.concat("M");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.N)){
+            username = username.concat("N");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.O)){
+            username = username.concat("O");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)){
+            username = username.concat("P");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)){
+            username = username.concat("Q");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)){
+            username = username.concat("R");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.S)){
+            username = username.concat("S");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
+            username = username.concat("T");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.U)){
+            username = username.concat("U");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.V)){
+            username = username.concat("V");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.W)){
+            username = username.concat("W");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.X)){
+            username = username.concat("X");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Y)){
+            username = username.concat("Y");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Z)){
+            username = username.concat("Z");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            username = username.concat(" ");
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DEL)){
+            if (!username.equals("")) {
+                username = username.substring(0, username.length() - 1);
+            }
+        }
+        return username;
     }
 }

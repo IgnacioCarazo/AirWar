@@ -72,6 +72,7 @@ public class GameScreen2 implements Screen {
     private int rocketSpeed;
     private boolean paused;
     private Screen savedScreen;
+    private String username;
 
     // Entities
     private ArrayList<Bullet> bullets;
@@ -82,7 +83,8 @@ public class GameScreen2 implements Screen {
     private ArrayList<Airport> airports;
 
 
-    public GameScreen2(Main game){
+    public GameScreen2(Main game, String username){
+        this.username = username;
         this.game = game;
         font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
         score = 0;
