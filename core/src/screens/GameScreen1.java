@@ -37,9 +37,9 @@ public class GameScreen1 implements Screen {
     private final float MOVE_SPEED_CHANGE_MAX_WAIT_TIME = 10F;
 
     //statics
-    public static int routeIdentifier;
+    public static  int routeIdentifier;
     public  ArrayList<Route> existingRoutes;
-    public static int score;
+    public int score;
     // Textures in Screen
     private Texture cliff_top;
     private Texture cliff_bottom;
@@ -48,6 +48,9 @@ public class GameScreen1 implements Screen {
     private Texture top_left;
     private Texture top_right;
     private Texture top_left_sea;
+    private Texture top_right_sea;
+    private Texture bottom_right_sea;
+    private Texture bottom_left_sea;
     private Texture bottom_left;
     private Texture bottom_right;
     private Texture tank;
@@ -78,12 +81,15 @@ public class GameScreen1 implements Screen {
     private float moveTimer;
     private float dangerTimer;
     private float rocketTimer;
+    private int charging = 1;
+    private  boolean lowerPower;
     // tools
     private ShapeRenderer shapeRender;
     private float x, y;
     private boolean left;
     private boolean right;
     private BitmapFont font;
+    private BitmapFont font2;
     private Main game;
     private int rocketSpeed;
     private boolean paused;
@@ -112,6 +118,8 @@ public class GameScreen1 implements Screen {
         this.game = game;
         font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
         font.getData().setScale((float) 0.5);
+        font2 = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
+        font2.getData().setScale((float) 0.4);
         score = 0;
         tempspeed = 0;
         shootTimer = 0;
@@ -163,6 +171,9 @@ public class GameScreen1 implements Screen {
         bottom_left = new Texture("terrain_corner_inner_southwest_f1.png");
         bottom_right = new Texture("terrain_corner_inner_southeast_f1.png");
         top_left_sea = new Texture("terrain_corner_northwest_f1.png");
+        top_right_sea = new Texture("terrain_corner_northeast_f1.png");
+        bottom_right_sea = new Texture("terrain_corner_southeast_f2.png");
+        bottom_left_sea = new Texture("terrain_corner_southwest_f1.png");
         forest1 =  new Texture("tree_A.png");
         forest2 =  new Texture("tree_B.png");
         forest3 =  new Texture("tree_C.png");
@@ -186,42 +197,45 @@ public class GameScreen1 implements Screen {
         }
         //Spawn Carriers
         if (!Carrier.flag) {
-                int xCarrier1 = 600 + (int) (Math.random() * ((700 - 600) + 1));
-                int xCarrier2 = 300 + (int) (Math.random() * ((400 - 300) + 1));
-                int yCarrier1 = 430 + (int) (Math.random() * ((630 - 430) + 1));
-                int yCarrier2 = 130 + (int) (Math.random() * ((630 - 130) + 1));
-                carriers.add(new Carrier(xCarrier1, yCarrier1,routeIdentifier));
-                carriers.add(new Carrier(xCarrier2, yCarrier2,routeIdentifier));
+                int xCarrier1 =  (int) (Math.random() * ((200) + 1));
+                int xCarrier2 =  (int) (Math.random() * ((200) + 1));
+                int yCarrier1 = 730 + (int) (Math.random() * ((830 - 730) + 1));
+                int yCarrier2 = 130 + (int) (Math.random() * ((230 - 130) + 1));
+                carriers.add(new Carrier(xCarrier1, yCarrier1,routeIdentifier,2));
+                routeIdentifier += 1;
+                carriers.add(new Carrier(xCarrier2, yCarrier2,routeIdentifier,2));
+                routeIdentifier += 1;
                 nodeQuantity += 2;
         }
         //Spawn Airports
         if (!Airport.flag) {
-            int xAirport1 = (int) (Math.random() * ((200) + 1));
-            int xAirport2 = (int) (Math.random() * ((200) + 1));
-            int yAirport1 = 130 + (int) (Math.random() * ((330 - 130) + 1));
-            int yAirport2 = 430 + (int) (Math.random() * ((630 - 430) + 1));
-            int xAirport3 = 220 + (int) (Math.random() * ((800 - 220) + 1));
-            int yAirport3 = 700 + (int) (Math.random() * ((800 - 700) + 1));
-            airports.add(new Airport(xAirport1, yAirport1, routeIdentifier));
-            airports.add(new Airport(xAirport2, yAirport2, routeIdentifier));
-            airports.add(new Airport(xAirport3,yAirport3, routeIdentifier));
+            int xAirport1 = 400 + (int) (Math.random() * ((500 - 400) + 1));
+            int xAirport2 = 150 + (int) (Math.random() * ((300 - 150) + 1));
+            int yAirport1 = 230 + (int) (Math.random() * ((330 - 230) + 1));
+            int yAirport2 = 430 + (int) (Math.random() * ((590 - 430) + 1));
+            int xAirport3 = 520 + (int) (Math.random() * ((600 - 520) + 1));
+            int yAirport3 = 500 + (int) (Math.random() * ((650 - 500) + 1));
+            airports.add(new Airport(xAirport1, yAirport1, routeIdentifier,2));
+            routeIdentifier += 1;
+            airports.add(new Airport(xAirport2, yAirport2, routeIdentifier,2));
+            routeIdentifier += 1;
+            airports.add(new Airport(xAirport3,yAirport3, routeIdentifier,2));
             nodeQuantity += 3;
         }
         if (!Airport.flag){
             //creacion de Grafo de rutas en blanco
             grafo = new MatrizAdyacencia(nodeQuantity);
             //Asignacion de rutas
-            Methods.assignRoutes(carriers, airports, existingRoutes,routeIdentifier, grafo);
+            Methods.assignRoutes(carriers, airports, existingRoutes,routeIdentifier, grafo, 3, 1);
             Methods.addRouteArrayList(grafo, carriers,airports, existingRoutes, actualPaths);
             System.out.println("Total routes: " +  existingRoutes.size());
         }
 
-        //Codigo de rutas mas cortas
 
         //Codigo de spawn de aviones
         aircraftSpawnTimer += delta;
         if (aircraftSpawnTimer >= AIRCRAFT_SPAWN_TIME) {
-            Methods.aircraftSpawn(ports, carriers, airports,  aircrafts, aircraftNumber);
+            Methods.aircraftSpawn(ports, carriers, airports,  aircrafts, aircraftNumber, 1);
             aircraftSpawnTimer = 0;
             aircraftNumber ++;
         }
@@ -250,30 +264,21 @@ public class GameScreen1 implements Screen {
             SHOOT_WAIT_TIME_A = 0.8f;
         }
 
-        //shooting code rockets
-//        if (Gdx.input.isKeyPressed(Input.Keys.R) && shootTimer >= SHOOT_WAIT_TIME_A) {
-//            rocketTimer += delta;
-//            shootTimer = 0;
-//            if (Gdx.input.isKeyPressed(Input.Keys.R)) {
-//                if (rocketTimer >= 5f) {
-//                    rockets.add(new Rocket(x, 800));
-//                    rocketTimer = 0;
-//
-//                } else if (rocketTimer >= 4f) {
-//                    rockets.add(new Rocket(x, 600));
-//                    rocketTimer = 0;
-//
-//                } else if (rocketTimer >= 3f) {
-//                    rockets.add(new Rocket(x, 400));
-//                    rocketTimer = 0;
-//
-//                } else if (rocketTimer < 3f) {
-//                    rockets.add(new Rocket(x, 200));
-//                    rocketTimer = 0;
-//
-//                }
-//            }
-//        }
+//        shooting code rockets
+
+        if (Gdx.input.isKeyPressed(Input.Keys.R)) {
+            if (charging<=995){
+                charging += 5;
+            }
+            if ((Gdx.input.isKeyPressed(Input.Keys.T) &&Gdx.input.isKeyPressed(Input.Keys.R)  && shootTimer >= SHOOT_WAIT_TIME_A)){
+                System.out.println(charging);
+                rockets.add(new Rocket(x, charging));
+                shootTimer = 0;
+                charging = 0;
+            }
+        } else {
+            charging = 0;
+        }
 
         // update bullets
         ArrayList<Bullet> bulletsToRemove = new ArrayList<Bullet>();
@@ -354,11 +359,14 @@ public class GameScreen1 implements Screen {
                         rocketsToRemove.add(rocket);
 
                     } else {
-                        rocketsToRemove.add(rocket);
-                        aircraftsToRemove.add(aircraft);
-                        explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
-                        Methods.changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
+                        Methods.destroyAircraftRockets(rocketsToRemove, rocket, aircraftsToRemove, aircraft, explosions, existingRoutes, carriers, airports);
                         score += 100;
+                        for (Carrier carrier : carriers) {
+                            Methods.addDMGtoWeight(carrier.getRoutes(), aircraft);
+                        }
+                        for (Airport airport : airports) {
+                            Methods.addDMGtoWeight(airport.getRoutes(), aircraft);
+                        }
                     }
                 }
             }
@@ -377,46 +385,141 @@ public class GameScreen1 implements Screen {
         game.batch.begin(); // Le dice al compilador que va a empezar a dibujar imagenes
 
         //Map rendering
-        Methods.drawTerrain(0,900,0,900, grass, game);
-        Methods.drawTerrain(600,1200,130,900, grass,game);
-        Methods.drawTerrain(300,600,130,630, sea,game);
-        Methods.drawTerrain(600,900,430,630,sea,game);
-        Methods.drawTerrain(0,300,130,900, grass,game);
-        Methods.drawTerrain(0,900,650,900, grass,game);
-        Methods.drawTerrain(300,900,625,630, cliff_top,game);
-        Methods.drawTerrain(300,310,130,630, cliff_left,game);
-        Methods.drawTerrain(600,610,130,430, cliff_right,game);
-        Methods.drawTerrain(610,900,430,440, cliff_bottom,game);
-        Methods.drawTerrain(300,600,130,140, cliff_bottom,game);
-        Methods.drawTerrain(0,900,850,900,largeMountain,game);
-        game.batch.draw(top_left,300,625);
-        game.batch.draw(top_left_sea,600,430);
-        game.batch.draw(bottom_left,300,130);
-        game.batch.draw(bottom_right,600,130);
+        Methods.drawTerrain(0,900,0,900, sea, game);
+
+        Methods.drawTerrain(150,750,300,600, grass, game);
+        Methods.drawTerrain(200,700,270,650,grass, game);
+        Methods.drawTerrain(550,650,235,700, grass, game);
+        Methods.drawTerrain(550,600,235,800, grass, game);
+        Methods.drawTerrain(250,450,300,700, grass, game);
+        Methods.drawTerrain(450,725,220,550, grass, game);
+        Methods.drawTerrain(500,675,170,550, grass, game);
+
+        Methods.drawTerrain(250,440,675,700, cliff_bottom, game);
+        Methods.drawTerrain(225,250,625,650, cliff_bottom, game);
+        Methods.drawTerrain(550,600,775,800, cliff_bottom, game);
+        Methods.drawTerrain(600,625,675,700, cliff_bottom, game);
+        Methods.drawTerrain(650,675,625,650, cliff_bottom, game);
+        Methods.drawTerrain(450,550,625,650, cliff_bottom, game);
+        Methods.drawTerrain(175,200,575,600, cliff_bottom, game);
+        Methods.drawTerrain(700,725,575,600, cliff_bottom, game);
+
+        Methods.drawTerrain(160,185,275,300, cliff_top, game);
+        Methods.drawTerrain(200,425,250,275, cliff_top, game);
+        Methods.drawTerrain(450,500,200,225, cliff_top, game);
+        Methods.drawTerrain(525,650,150,175, cliff_top, game);
+        Methods.drawTerrain(675,700,200,225, cliff_top, game);
+        Methods.drawTerrain(725,750,275,300, cliff_top, game);
+
+        Methods.drawTerrain(140,165,325,575, cliff_right, game);
+        Methods.drawTerrain(190,215,600,625, cliff_right, game);
+        Methods.drawTerrain(230,255,655,680, cliff_right, game);
+        Methods.drawTerrain(440,465,240,265, cliff_right, game);
+        Methods.drawTerrain(525,550,650,775, cliff_right, game);
+
+        Methods.drawTerrain(600,625,700,775, cliff_left, game);
+        Methods.drawTerrain(625,650,655,680, cliff_left, game);
+        Methods.drawTerrain(440,475,655,680, cliff_left, game);
+        Methods.drawTerrain(725,750,325,575, cliff_left, game);
+        Methods.drawTerrain(700,720,225,275, cliff_left, game);
+        Methods.drawTerrain(650,675,175,200, cliff_left, game);
+
+
+        Methods.drawTerrain(140,175,575,600,top_left_sea , game);
+        Methods.drawTerrain(190,215,625,650,top_left_sea , game);
+        Methods.drawTerrain(228,253,675,700,top_left_sea , game);
+        Methods.drawTerrain(525,550,775,800,top_left_sea , game);
+
+        Methods.drawTerrain(440,465,675,700,top_right_sea , game);
+        Methods.drawTerrain(600,625,775,800,top_right_sea , game);
+
+
+
+        Methods.drawTerrain(190,215,575,600,bottom_right , game);
+        Methods.drawTerrain(230,265,625,650,bottom_right , game);
+        Methods.drawTerrain(525,550,625,650,bottom_right , game);
+
+
+        Methods.drawTerrain(440,465,625,650,bottom_left , game);
+        Methods.drawTerrain(600,625,675,700,bottom_left , game);
+        Methods.drawTerrain(625,650,625,650,bottom_left , game);
+        Methods.drawTerrain(655,680,575,600,bottom_left , game);
+        Methods.drawTerrain(625,650,675,700,top_right_sea , game);
+        Methods.drawTerrain(655,680,625,650,top_right_sea , game);
+        Methods.drawTerrain(725,750,575,600,top_right_sea , game);
+
+
+
+        Methods.drawTerrain(190,215,275,300, top_right, game);
+        Methods.drawTerrain(500,525,200,225, top_right, game);
+        Methods.drawTerrain(440,455,250,275, top_right, game);
+
+        Methods.drawTerrain(140,175,275,300, bottom_left_sea , game);
+        Methods.drawTerrain(190,215,250,275, bottom_left_sea , game);
+        Methods.drawTerrain(440,465,200,225, bottom_left_sea , game);
+        Methods.drawTerrain(500,525,150,175, bottom_left_sea , game);
+
+        Methods.drawTerrain(650,675,150,175, bottom_right_sea , game);
+        Methods.drawTerrain(700,725,200,225, bottom_right_sea , game);
+        Methods.drawTerrain(725,750,275,300, bottom_right_sea , game);
+
+
+
+
+
+        //Map pretty things
+        game.batch.draw(smallMountain,630,600);
+        game.batch.draw(town2,550,700);
+        game.batch.draw(town1,550,710);
+        game.batch.draw(forest4,600,705);
+        game.batch.draw(largeMountain,400,400);
+        game.batch.draw(largeMountain,440,440);
+        game.batch.draw(smallMountain,200,300);
+        game.batch.draw(town1,400,400);
+        game.batch.draw(town2,420,400);
+        game.batch.draw(town2,290,400);
+        game.batch.draw(forest4,300,400);
+        game.batch.draw(forest4,305,400);
+        game.batch.draw(forest4,310,410);
+        game.batch.draw(forest4,450,400);
+        game.batch.draw(forest4,460,400);
+        game.batch.draw(town2,290,500);
+        game.batch.draw(forest4,370,500);
+        game.batch.draw(forest4,375,500);
+        game.batch.draw(forest4,380,510);
+        game.batch.draw(town2,290,660);
+        game.batch.draw(forest4,300,660);
+        game.batch.draw(forest4,305,660);
+        game.batch.draw(forest4,310,670);
+        game.batch.draw(town2,410,650);
+        game.batch.draw(town2,380,660);
+        game.batch.draw(town2,390,670);
+        game.batch.draw(smallMountain,300,600);
+        game.batch.draw(town1,160,400);
+        game.batch.draw(town2,160,350);
+        game.batch.draw(largeMountain,200,400);
+        game.batch.draw(largeMountain,550,250);
+        game.batch.draw(town2,550,350);
+        game.batch.draw(town2,600,500);
+        game.batch.draw(smallMountain,600,425);
+        game.batch.draw(smallMountain,450,580);
+
+
         game.batch.draw(sky,900,0);
         game.batch.draw(copter,x,y);
         game.batch.draw(rotor, x + copter.getWidth() + 17 - rotor.getWidth(),20);
-        game.batch.draw(smallMountain, 120,400);
-        Methods.drawTerrain(120,120 + smallMountain.getWidth(),400,415,forest1, game);
-        Methods.drawTerrain(0,890,87,92,forest4,game);
-        int towny = 130;
-        int townx = 670;
-        for (int i = 0; i < 9; i++) {
-            game.batch.draw(town1,townx,towny);
-            towny += 30;
-        }
-        Methods.drawTerrain(600,700, 700, 740,town2, game);
+
 
         // Aircraft identifier
         int ypos = 400;
 
         for (Aircraft aircraft : aircrafts){
-            GlyphLayout Alayout = new GlyphLayout(font, " " + aircraft.identifier);
-            font.draw(game.batch, Alayout, aircraft.getX(), aircraft.getY());
-            GlyphLayout layout1 = new GlyphLayout(font, "A" + aircraft.identifier);
-            font.draw(game.batch, layout1, 905, ypos);
-            GlyphLayout layout2 = new GlyphLayout(font, "" + Methods.printRoutes(aircraft.routesToFollow));
-            font.draw(game.batch, layout2, 960, ypos);
+            GlyphLayout Alayout = new GlyphLayout(font2, " " + aircraft.identifier);
+            font2.draw(game.batch, Alayout, aircraft.getX(), aircraft.getY());
+            GlyphLayout layout1 = new GlyphLayout(font2, "A" + aircraft.identifier);
+            font2.draw(game.batch, layout1, 905, ypos);
+            GlyphLayout layout2 = new GlyphLayout(font2, "" + Methods.printRoutes(aircraft.routesToFollow));
+            font2.draw(game.batch, layout2, 945, ypos);
 
             ypos -= 20;
         }
@@ -540,10 +643,16 @@ public class GameScreen1 implements Screen {
         }
 
         //Speed layout
-        GlyphLayout tempSpeedLayoutA = new GlyphLayout(font, "CURRENT SPEED");
+        GlyphLayout tempSpeedLayoutA = new GlyphLayout(font, "CHOPPER SPEED");
         font.draw(game.batch, tempSpeedLayoutA, 950, 150);
         GlyphLayout tempSpeedLayoutB = new GlyphLayout(font, "" + tempspeed);
-        font.draw(game.batch, tempSpeedLayoutB, 1020, 120);
+        font.draw(game.batch, tempSpeedLayoutB, 1020, 130);
+
+        //Power layout
+        GlyphLayout pwrLayout = new GlyphLayout(font, "PWR");
+        font.draw(game.batch, pwrLayout, 950, 100);
+        GlyphLayout pwrLayout2 = new GlyphLayout(font, "" + charging);
+        font.draw(game.batch, pwrLayout2, 1020, 100);
 
         game.batch.end();// le dice al compilador que ya no va a dibujar mas imagenes
             for (Route route: existingRoutes){

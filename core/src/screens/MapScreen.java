@@ -50,7 +50,7 @@ public class MapScreen implements Screen {
         game.batch.draw(sky,0,0);
 
         //Map1
-        GlyphLayout layout1 = new GlyphLayout(font, "Map 1");
+        GlyphLayout layout1 = new GlyphLayout(font, "Australia");
         font.draw(game.batch, layout1, 200, 850);
         if (Gdx.input.getX() < 200 + map1.getWidth() && Gdx.input.getX() > 200 && Gdx.input.getY() < 150 + map1.getHeight() && Gdx.input.getY() > 150){
             game.batch.draw(map1,205,505);
@@ -62,7 +62,7 @@ public class MapScreen implements Screen {
             game.batch.draw(map1,200,500);
         }
         //Map2
-        GlyphLayout layout2 = new GlyphLayout(font, "Map 2");
+        GlyphLayout layout2 = new GlyphLayout(font, "Centro America");
         font.draw(game.batch, layout2, 200, 450);
         if (Gdx.input.getX() < 200 + map2.getWidth() && Gdx.input.getX() > 200 && Gdx.input.getY() < 550 + map2.getHeight() && Gdx.input.getY() > 550){
             game.batch.draw(map2,205,105);
@@ -72,18 +72,6 @@ public class MapScreen implements Screen {
             }
         } else {
             game.batch.draw(map2,200,100);
-        }
-        //Map3
-        GlyphLayout layout3 = new GlyphLayout(font, "Map 3");
-        font.draw(game.batch, layout3, 800, 850);
-        if (Gdx.input.getX() < 800 + map3.getWidth() && Gdx.input.getX() > 800 && Gdx.input.getY() < 150 + map3.getHeight() && Gdx.input.getY() > 150){
-            game.batch.draw(map3,805,505);
-            if (Gdx.input.isTouched()) {
-                this.dispose();
-                game.setScreen(new GameScreen3(game, username));
-            }
-        } else {
-            game.batch.draw(map3,800,500);
         }
         //Return button
         GlyphLayout layout4 = new GlyphLayout(font, "Press to return");

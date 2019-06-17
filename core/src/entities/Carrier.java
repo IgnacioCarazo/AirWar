@@ -3,6 +3,7 @@ package entities;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import screens.GameScreen1;
+import screens.GameScreen2;
 import tools.CollisionRect;
 import tools.Methods;
 import tools.Route;
@@ -49,17 +50,21 @@ public class Carrier {
         return destiny;
     }
 
-    public Carrier(int x, int y, int index){
+    public Carrier(int x, int y, int index, int verif){
         this.x = x;
         this.y = y;
         this.index = index;
         if (texture == null){
             texture = new Texture("carrier_horizontal.png");
         }
-        this.intidentifier = GameScreen1.routeIdentifier;
-        this.identifier = Methods.assignRouteIdentifier(GameScreen1.routeIdentifier);
+        if (verif == 1) {
+            this.intidentifier = GameScreen1.routeIdentifier;
+            this.identifier = Methods.assignRouteIdentifier(index);
+        } else {
+            this.intidentifier = GameScreen2.routeIdentifier;
+            this.identifier = Methods.assignRouteIdentifier(index);
+        }
         this.rect = new CollisionRect(x,y,texture.getWidth()/2,texture.getHeight()/2);
-        GameScreen1.routeIdentifier += 1;
         this.destiny = new ArrayList<ArrayList<Route>>();
 
     }

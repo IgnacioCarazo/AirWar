@@ -12,19 +12,18 @@ import grafomatriz.Recorrido;
 import java.util.ArrayList;
 import java.util.Random;
 
-import static screens.GameScreen2.existingRoutes;
 
 public class Methods {
 
     private static boolean verif;
-    public static void assignRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Route> existingRoutes, int routeIdentifier, MatrizAdyacencia grafo){
+    public static void assignRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Route> existingRoutes, int routeIdentifier, MatrizAdyacencia grafo, int verif, int verif2){
         for (Carrier carrier: carriers){
-            carrier.setRoutes(assignCarrierRoutes(carriers,airports,carrier, existingRoutes, routeIdentifier));
+            carrier.setRoutes(assignCarrierRoutes(carriers,airports,carrier, existingRoutes, routeIdentifier, verif, verif2));
             ArrayList<Route> routes =  carrier.getRoutes();
-            addroute(grafo,routes); //Adds every single DIRECT carrie's route
+            addroute(grafo,routes); //Adds every single DIRECT carrier's route
         }
         for (Airport airport: airports){
-            airport.setRoutes(assignAirportRoutes(carriers,airports,airport, existingRoutes, routeIdentifier));
+            airport.setRoutes(assignAirportRoutes(carriers,airports,airport, existingRoutes, routeIdentifier, verif, verif2));
             ArrayList<Route> routes =  airport.getRoutes();
             addroute(grafo,routes); //Adds every single DIRECT airport's route
         }
@@ -50,7 +49,6 @@ public class Methods {
                             }
                         }
                         if (route.size() >= 1) {
-                            carrier.destiny.clear();
                             carrier.destiny.add(route);
                         }
                     }
@@ -72,7 +70,6 @@ public class Methods {
                             }
                         }
                         if (route.size() >= 1) {
-                            airport.destiny.clear();
                             airport.destiny.add(route);
                         }
                     }
@@ -96,11 +93,11 @@ public class Methods {
         addRouteArrayList(grafo, carriers,airports, existingRoutes, actualPaths);
     }
 
-    public static void aircraftSpawn(ArrayList<String> ports, ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Aircraft> aircrafts, int aircraftNumber){
-        int randomAirportIndex = Methods.randomAirportIndex();
-        int randomCarrierIndex = Methods.randomCarrierIndex();
-
-        if (ports.get(randomCarrierIndex).equals("carriers")){
+    public static void aircraftSpawn(ArrayList<String> ports, ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Aircraft> aircrafts, int aircraftNumber, int verif){
+        int randomAirportIndex = Methods.randomAirportIndex(verif);
+        int randomCarrierIndex = Methods.randomCarrierIndex(verif);
+        int randomPort = (int) (Math.random() * (2));
+        if (ports.get(randomPort).equals("carriers")){
             if (randomAirportIndex > 1){
                 randomCarrierIndex = 1;
             }
@@ -202,6 +199,12 @@ public class Methods {
         explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
         changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
     }
+    public static void destroyAircraftRockets(ArrayList<Rocket> rocketsToRemove, Rocket rocket, ArrayList<Aircraft> aircraftsToRemove, Aircraft aircraft, ArrayList<Explosion> explosions, ArrayList<Route> existingRoutes, ArrayList<Carrier> carriers, ArrayList<Airport> airports){
+        rocketsToRemove.add(rocket);
+        aircraftsToRemove.add(aircraft);
+        explosions.add(new Explosion(aircraft.getX(), aircraft.getY()));
+        changeRouteDanger(existingRoutes,carriers,airports, aircraft.route.identifier);
+    }
 
     public static void addDMGtoWeight(ArrayList<Route> routes, Aircraft aircraft){
         for (Route route : routes){
@@ -217,13 +220,20 @@ public class Methods {
         }
     }
 
-    private static int randomAirportIndex() {
-        return (int) (Math.random() * (3));
+    private static int randomAirportIndex(int verif) {
+        if (verif == 1) {
+            return (int) (Math.random() * (3));
+        } else {
+            return (int) (Math.random() * (4));
+        }
     }
 
-    private static int randomCarrierIndex() {
-        int number = (int) (Math.random() * (2));
-        return number;
+    private static int randomCarrierIndex(int verif) {
+        if (verif == 1) {
+            return (int) (Math.random() * (2));
+        } else {
+            return (int) (Math.random() * (3));
+        }
     }
 
     public static void drawTerrain(int xMin,int xMax, int yMin, int yMax, Texture texture, Main game){
@@ -239,13 +249,29 @@ public class Methods {
     }
 
     private static ArrayList<Route> chooseRandomRouteAirport(ArrayList<ArrayList<Route>> list){
+        int number;
         Random rand = new Random();
-        return list.get(rand.nextInt(list.size()));
+        if (list.size() == 0) {
+            number = 0;
+
+        } else{
+            number = rand.nextInt(list.size());
+
+        }
+        return list.get(number);
     }
 
     private static ArrayList<Route> chooseRandomRouteCarrier(ArrayList<ArrayList<Route>> list){
+        int number;
         Random rand = new Random();
-        return list.get(rand.nextInt(list.size()));
+        if (list.size() == 0) {
+            number = 0;
+
+        } else{
+            number = rand.nextInt(list.size());
+
+        }
+        return list.get(number);
     }
 
     private static void createCarrierToCarrierRoute(Carrier carrier, Carrier carrierAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
@@ -292,10 +318,10 @@ public class Methods {
         }
     }
 
-    public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier, ArrayList<Route> existingRoutes, int routeIdentifier){
+    public static ArrayList<Route> assignCarrierRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Carrier carrier, ArrayList<Route> existingRoutes, int routeIdentifier, int verif, int verif2){
 
         int unavailable = carrier.getIndex();
-        int routesToAssign = 3 + (int) (Math.random() * ((4 - 3) + 1));
+        int routesToAssign = verif + (int) (Math.random() * ((4 - verif) + 1));
 //        int routesToAssign = 1;
         ArrayList<Route> routes = new ArrayList<Route>();
         ArrayList<String> ports = new ArrayList<String>();
@@ -309,10 +335,10 @@ public class Methods {
             ArrayList<Integer> airportsOccupied = new ArrayList<Integer>();
             ArrayList<Integer> carriersOccupied = new ArrayList<Integer>();
 
-            int randomAirportIndex = randomAirportIndex();
-            int randomCarrierIndex = randomCarrierIndex();
-
-            String port = ports.get(randomCarrierIndex);
+            int randomAirportIndex = randomAirportIndex(verif2);
+            int randomCarrierIndex = randomCarrierIndex(verif2);
+            int randomPort = (int) (Math.random() * (2));
+            String port = ports.get(randomPort);
 
             if (port.equals("carriers")){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);
@@ -335,10 +361,10 @@ public class Methods {
         return routes;
     }
 
-    private static ArrayList<Route> assignAirportRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Airport airport, ArrayList<Route> existingRoutes, int routeIdentifier){
+    private static ArrayList<Route> assignAirportRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, Airport airport, ArrayList<Route> existingRoutes, int routeIdentifier, int verif, int verif2){
 
         int unavailable = airport.getIndex();
-        int routesToAssign = 3 + (int) (Math.random() * ((4 - 3) + 1));
+        int routesToAssign = verif + (int) (Math.random() * ((4 - verif) + 1));
 //        int routesToAssign = 1;
         ArrayList<Route> routes = new ArrayList<Route>();
         ArrayList<String> ports = new ArrayList<String>();
@@ -349,10 +375,11 @@ public class Methods {
 
         for (int i = 0; i < routesToAssign; i++) {
 
-            int randomAirportIndex = randomAirportIndex();
-            int randomCarrierIndex = randomCarrierIndex();
+            int randomAirportIndex = randomAirportIndex(verif2);
+            int randomCarrierIndex = randomCarrierIndex(verif2);
+            int randomPort = (int) (Math.random() * (2));
 
-            String port = ports.get(randomCarrierIndex);
+            String port = ports.get(randomPort);
 
             if (port.equals("carriers")){
                 Carrier carrierAssigned = carriers.get(randomCarrierIndex);

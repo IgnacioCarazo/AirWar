@@ -88,14 +88,11 @@ public class Recorrido {
         int temporal = 0; // de 2 a 1
         ArrayList<Integer> secuencia = new ArrayList<Integer>();
         secuencia.add(origen);
-        System.out.print("Secuencia de vertices: " + origen );
         while(matrizNodosRecorrido[origen][destino]!=destino) {
-            System.out.print(" ---> " + matrizNodosRecorrido[origen][destino]);
             secuencia.add(matrizNodosRecorrido[origen][destino]);
             origen = matrizNodosRecorrido[origen][destino];
         }
         secuencia.add(destino);
-        System.out.println(" ---> " + destino);
         return secuencia;
     }
 }
