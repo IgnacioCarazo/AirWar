@@ -7,6 +7,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import tools.Score;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 public class HighScoreScreen implements Screen {
 
@@ -14,10 +19,12 @@ public class HighScoreScreen implements Screen {
     private Texture sky;
     private BitmapFont font;
     private Main game;
+    private HashMap hashMap;
 
     public HighScoreScreen(Main game){
         this.game = game;
         this.font = new BitmapFont(Gdx.files.internal("fonts/score.fnt"));
+        this.hashMap = Score.extraerDatos();
 
     }
     @Override
@@ -56,6 +63,22 @@ public class HighScoreScreen implements Screen {
         // Scores
         GlyphLayout layout3 = new GlyphLayout(font, "Score");
         font.draw(game.batch, layout3, 400, 875);
+
+        //Scores displayer
+        Set<String> keys = hashMap.keySet();
+        int posy = 840;
+        for(String key: keys){
+            GlyphLayout layoutA = new GlyphLayout(font, "" + key);
+            font.draw(game.batch, layoutA, 100, posy);
+            posy -= 35;
+        }
+        Iterator<Integer> itr = hashMap.values().iterator();
+        int posY = 840;
+        while (itr.hasNext()){
+            GlyphLayout layoutA = new GlyphLayout(font, "" + itr.next());
+            font.draw(game.batch, layoutA, 400, posY);
+            posY -= 35;
+        }
 
         game.batch.end();
     }

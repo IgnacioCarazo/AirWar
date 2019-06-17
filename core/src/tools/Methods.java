@@ -9,15 +9,14 @@ import com.badlogic.gdx.math.Vector2;
 import entities.*;
 import grafomatriz.MatrizAdyacencia;
 import grafomatriz.Recorrido;
-
 import java.util.ArrayList;
 import java.util.Random;
 
+import static screens.GameScreen2.existingRoutes;
 
 public class Methods {
 
     private static boolean verif;
-
     public static void assignRoutes(ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Route> existingRoutes, int routeIdentifier, MatrizAdyacencia grafo){
         for (Carrier carrier: carriers){
             carrier.setRoutes(assignCarrierRoutes(carriers,airports,carrier, existingRoutes, routeIdentifier));
@@ -30,11 +29,11 @@ public class Methods {
             addroute(grafo,routes); //Adds every single DIRECT airport's route
         }
     }
+
     public static void addRouteArrayList(MatrizAdyacencia grafo, ArrayList<Carrier> carriers,ArrayList<Airport> airports, ArrayList<Route> existingRoutes, Recorrido actualPaths){
         try {
             actualPaths =  new Recorrido(grafo);
             int[][] matriz = actualPaths.matrizWarshall;
-
             for(Carrier carrier: carriers){
                 for (int j = 0; j < matriz.length ; j++) {
                     ArrayList<Route> route = new ArrayList<Route>();
@@ -51,13 +50,10 @@ public class Methods {
                             }
                         }
                         if (route.size() >= 1) {
-
-                            for (Route route1 : route) {
-                            }
+                            carrier.destiny.clear();
                             carrier.destiny.add(route);
                         }
                     }
-
                 }
             }
             for(Airport airport: airports){
@@ -76,19 +72,28 @@ public class Methods {
                             }
                         }
                         if (route.size() >= 1) {
-
-                            for (Route route1 : route) {
-                            }
+                            airport.destiny.clear();
                             airport.destiny.add(route);
                         }
                     }
                 }
-
             }
         }catch(Exception a){
-            System.out.println("Error al generar los caminos mas cortos 1st Time");
+            System.out.println("Error al generar los caminos mas cortos");
         }
+    }
 
+    public static void refreshRoute(MatrizAdyacencia grafo, Route refreshRoute,Integer newWeight, ArrayList<Carrier> carriers,ArrayList<Airport> airports, ArrayList<Route> existingRoutes, Recorrido actualPaths) {
+        for(Route route :existingRoutes){
+            if (route.identifier.equals(refreshRoute.identifier)){
+                try{
+                    grafo.agregarArco(route.index,route.indexAssigned, newWeight);
+                }catch (Exception e){
+                    System.out.println("error al agregar ruta al grafo:refresh");
+                }
+            }
+        }
+        addRouteArrayList(grafo, carriers,airports, existingRoutes, actualPaths);
     }
 
     public static void aircraftSpawn(ArrayList<String> ports, ArrayList<Carrier> carriers, ArrayList<Airport> airports, ArrayList<Aircraft> aircrafts, int aircraftNumber){
@@ -212,8 +217,6 @@ public class Methods {
         }
     }
 
-
-
     private static int randomAirportIndex() {
         return (int) (Math.random() * (3));
     }
@@ -239,6 +242,7 @@ public class Methods {
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
     }
+
     private static ArrayList<Route> chooseRandomRouteCarrier(ArrayList<ArrayList<Route>> list){
         Random rand = new Random();
         return list.get(rand.nextInt(list.size()));
@@ -254,6 +258,7 @@ public class Methods {
             routeIdentifier ++;
         }
     }
+
     private static void createCarrierToAirportRoute(Carrier carrier, Airport airportAssigned, ArrayList<Route> routes, ArrayList<Route> existingRoutes, int routeIdentifier){
         Route route = new Route("carrier","airport",carrier.getIndex(),airportAssigned.getIndex(), carrier.getX(),carrier.getY(),airportAssigned.getX(),airportAssigned.getY(),0);
         StringBuilder ID = new StringBuilder().append(carrier.identifier).append("-").append(airportAssigned.identifier);
@@ -384,10 +389,7 @@ public class Methods {
         return true;
     }
 
-
-
-    public static char assignRouteIdentifier(int index)
-    {
+    public static char assignRouteIdentifier(int index) {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         return AlphaNumericString.charAt(index);
     }
@@ -514,4 +516,5 @@ public class Methods {
         }
         return username;
     }
+
 }

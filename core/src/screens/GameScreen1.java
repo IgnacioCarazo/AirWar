@@ -15,7 +15,12 @@ import grafomatriz.MatrizAdyacencia;
 import grafomatriz.Recorrido;
 import tools.Methods;
 import tools.Route;
+import tools.Score;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import static com.badlogic.gdx.math.MathUtils.random;
 
 public class GameScreen1 implements Screen {
@@ -25,7 +30,7 @@ public class GameScreen1 implements Screen {
     private final int HIGH_SPEED = 400;
     private final float MOVE_WAIT_TIME = 0.02f;
     private final float AIRCRAFT_SPAWN_TIME = 5f;
-    private final float ROUTE_DANGER_TIMER = 30f;
+    private final float ROUTE_DANGER_TIMER = 3000f;
     private final float AIRCRAFT_ENTITY_MIN_WAIT_TIME = 1F;
     private final float AIRCRAFT_ENTITY_MAX_WAIT_TIME = 2F;
     private final float MOVE_SPEED_CHANGE_MIN_WAIT_TIME = 5F;
@@ -88,18 +93,19 @@ public class GameScreen1 implements Screen {
     private int tempspeed;
     public int aircraftNumber = 0;
     private String username;
+    private HashMap hashmap;
 
     // Entities
     private ArrayList<Bullet> bullets;
     private ArrayList<Rocket> rockets;
     private ArrayList<Explosion> explosions;
-    private ArrayList<Aircraft> aircrafts;
-    private ArrayList<Carrier> carriers;
+    public static ArrayList<Aircraft> aircrafts;
+    public static ArrayList<Carrier> carriers;
     private ArrayList<Airport> airports;
     private ArrayList<String> ports;
     //Pathfinding
     private Recorrido actualPaths;
-    private MatrizAdyacencia grafo;
+    public static MatrizAdyacencia grafo;
 
     public GameScreen1(Main game, String username){
         this.username = username;
@@ -134,6 +140,8 @@ public class GameScreen1 implements Screen {
         routeIdentifier = 0;
         right = true;
         left = false;
+        this.hashmap = Score.extraerDatos();
+
     }
 
     @Override
@@ -313,6 +321,9 @@ public class GameScreen1 implements Screen {
         if (dangerTimer >= ROUTE_DANGER_TIMER) {
             Methods.changeRouteDangerLVL(existingRoutes, carriers, airports);
             dangerTimer = 0;
+            for (Route route:existingRoutes){
+                Methods.refreshRoute(grafo,route,route.weight,carriers,airports,existingRoutes,actualPaths);
+            }
         }
 
         //Check collisions bullet/aircraft
@@ -409,8 +420,6 @@ public class GameScreen1 implements Screen {
 
             ypos -= 20;
         }
-
-
         // Airport/Carrier identifier render
         for (Carrier carrier : carriers){
             GlyphLayout layout = new GlyphLayout(font, " " + carrier.identifier);
@@ -443,6 +452,7 @@ public class GameScreen1 implements Screen {
                     font.draw(game.batch, temprouteLayout, 900, posy);
                     // Weight
                     int tempweight = route.weight + route.dmgweight;
+                    Methods.refreshRoute(grafo ,route,tempweight,carriers,airports,existingRoutes,actualPaths);
                     GlyphLayout tempweightLayout = new GlyphLayout(font, " " + tempweight);
                     font.draw(game.batch, tempweightLayout, 1000, posy);
                     posy -= 20;
@@ -544,6 +554,12 @@ public class GameScreen1 implements Screen {
             if (aircraftNumber == 30){
                 this.dispose();
                 game.setScreen(new MainMenu(game));
+                hashmap.put(username,score);
+                try {
+                    Score.guardarDatos(hashmap);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
     }
 

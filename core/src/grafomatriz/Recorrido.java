@@ -41,11 +41,6 @@ public class Recorrido {
                     } else {
                         int comparable = matrizMenoresDistancias[i][contador] + matrizMenoresDistancias[contador][j];
                         if (matrizMenoresDistancias[i][j] > (comparable)) {
-//                            System.out.println("Indices: " + i + " " + j);
-//                            System.out.println("Contador " + contador);
-//                            System.out.println("Cambio de: " + matrizMenoresDistancias[i][j] +" por " + comparable + " en Mat Menores Distancias");
-//                            System.out.println("Cambio de: " + matrizNodosRecorrido[i][j] + " por " + contador);
-//                            System.out.println();
                             matrizMenoresDistancias[i][j] = comparable;
                             matrizNodosRecorrido[i][j] = contador;
                         }else{}
